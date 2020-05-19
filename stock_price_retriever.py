@@ -1,6 +1,4 @@
 import yfinance as yf
-import pandas as pd
-from nltk.sentiment.vader import SentimentIntensityAnalyzer
 from nytimesarticle import articleAPI
 from datetime import datetime, timedelta
 
