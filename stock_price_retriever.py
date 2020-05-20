@@ -1,27 +1,7 @@
-import yfinance as yf
-from nytimesarticle import articleAPI
-from datetime import datetime, timedelta
+import nltk
+from nltk.sentiment import SentimentIntensityAnalyzer
 
-
-date = datetime.today() - timedelta(days=5)
-date = date.strftime('%Y%m%d')
-
-print(date)
-
-
-# newsAnalyzer = SentimentIntensityAnalyzer()
-api = articleAPI("rpGF0Ig2GV85kKfg")
-
-tickerSymbol = yf.Ticker("AAPL")
-
-print(tickerSymbol.get_info()['symbol'])
-
-#
-stockNewsArticles = api.search(q=tickerSymbol.get_info()['symbol'],
-     begin_date=date)
-
-print(stockNewsArticles)
-#
-# get stock info
-# print(tickerSymbol.history("1d").iloc[0])
-# print(tickerSymbol.quarterly_financials())
+nltk.download('vader_lexicon')
+sentimentAnalyzer = SentimentIntensityAnalyzer()
+print(sentimentAnalyzer.polarity_scores(
+    text="That rank is mainly influenced by a short-term technical score of 85. AAPL's rank also includes a long-term technical score of 82. The fundamental score for AAPL is 44. In addition to the average rating from Wall Street analysts, AAPL stock has a mean target price of 313.172. This means analysts expect the stock to rise 11.38% over the next 12 months.Overall Score - 70"))

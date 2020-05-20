@@ -1,0 +1,9 @@
+README.txt
+demjson.py
+jsonlint
+setup.py
+demjson.egg-info/PKG-INFO
+demjson.egg-info/SOURCES.txt
+demjson.egg-info/dependency_links.txt
+demjson.egg-info/top_level.txt
+test/test_demjson.py
