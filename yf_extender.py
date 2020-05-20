@@ -1,4 +1,7 @@
-def previous_2mo_high(ticker) -> int:
+import yfinance as yf
+
+
+def previous_2mo_high(ticker: yf.Ticker) -> int:
     high = ticker.history("2d").iloc[0]['High']
     for i in range(0, len(ticker.history("2mo")) - 2):
         temp_high = ticker.history("2mo").iloc[i]['High']
