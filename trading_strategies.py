@@ -15,13 +15,12 @@ def trend_following(stock_database):
         current_time = datetime.now().time()
 
         # get stock info
-        print("{0} price: {1} at {2}".format(stk, stk_price['Close'], current_time))
+        print("{0} price: {1} at {2}".format(stk, stk_price['Close'], datetime.now().strftime("%H:%M:%S")))
         previous_2mo_high = yf_extender.previous_2mo_high(ticker_stock)
         print("Previous2MoHigh: {0} CurrentStockPrice: {1} ".format(previous_2mo_high, stk_price['Close']))
 
         #  and (stk_price['High'] - stk_price['Close']) < 0.15
         if previous_2mo_high < stk_price['Close'] and (stk_price['High'] - stk_price['Close']) < 0.15:
-            print("Buying {0}".format(stk))
             json_simplifier.addToJson("stock_portfolio.json", ticker_stock, portfolio_manager.stocks)
 
 
