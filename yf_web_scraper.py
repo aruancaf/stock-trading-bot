@@ -18,5 +18,3 @@ def get_most_actives() -> []:
 
     return active_stocks
 
-print(get_most_actives())
-
