@@ -4,34 +4,43 @@ import trading_strategies
 import yf_web_scraper
 from portfolio_manager import PortfolioManager
 
-print("Position Polarity : {0}".format(PortfolioManager().get_position_polarity()))
 
-most_active_stocks = yf_web_scraper.get_most_actives()
-print(most_active_stocks)
-th1 = threading.Thread(target=trading_strategies.trend_following,
-                       args=[most_active_stocks[0:round(len(most_active_stocks) / 4)]])
-th2 = threading.Thread(target=trading_strategies.trend_following,
-                       args=[most_active_stocks[
-                             round(len(most_active_stocks) / 4 + 1): round(len(most_active_stocks) / 2)]])
-th3 = threading.Thread(target=trading_strategies.trend_following, args=[
-    most_active_stocks[round(len(most_active_stocks) / 2) + 1: round(3 * len(most_active_stocks) / 4)]])
+while True:
+    most_active_stocks = yf_web_scraper.get_most_actives()
+    # print(most_active_stocks)
+    print("Position Polarity : {0}".format(PortfolioManager().get_position_polarity()))
 
-th4 = threading.Thread(target=trading_strategies.trend_following, args=[
-    most_active_stocks[round(3 * len(most_active_stocks) / 4) + 1: len(most_active_stocks)]])
+    partitioned_most_active_stock = []
+    n = 8
+    for i in range(0, len(most_active_stocks), n):
+        partitioned_most_active_stock.append(most_active_stocks[i:i + n])
 
-# target=trading_strategies.trend_following, args=[most_active_stocks[round(len(most_active_stocks) / 2) + 1 : round(len(most_active_stocks)*3/4]])
+    print(partitioned_most_active_stock)
 
-th1.start()
+    threads = []
 
-th2.start()
+    for partition in partitioned_most_active_stock:
+        threads.append(threading.Thread(target=trading_strategies.trend_following,
+                                args=[partition]))
+    #
+    # [threading.Thread(target=trading_strategies.trend_following,
+    #                             args=[most_active_stocks[0:round(len(most_active_stocks) / 4)]]),
+    #            threading.Thread(target=trading_strategies.trend_following,
+    #                             args=[most_active_stocks[
+    #                                   round(len(most_active_stocks) / 4 + 1): round(len(most_active_stocks) / 2)]]),
+    #            threading.Thread(target=trading_strategies.trend_following, args=[
+    #                most_active_stocks[round(3 * len(most_active_stocks) / 4) + 1: len(most_active_stocks)]]),
+    #            threading.Thread(target=trading_strategies.trend_following, args=[
+    #                most_active_stocks[round(len(most_active_stocks) / 2) + 1: round(3 * len(most_active_stocks) / 4)]])]
+    #
+    # , threading.Thread(target=trading_strategies.trend_following, args=[most_active_stocks[round(3 * len(most_active_stocks) / 4) + 1: len(most_active_stocks)]])]
 
-th3.start()
+    for thread in threads:
+        thread.start()
 
-th4.start()
+    threads[0].join()
 
-# th3.start()
-# thread6.run_threaded(trading_strategies.trend_following, most_active_stocks[
-#                                                          round(len(most_active_stocks) / 2 + 1): round(
-#                                                              3 * len(most_active_stocks) / 4)])
-# thread6.run_threaded(trading_strategies.trend_following,
-#                      most_active_stocks[round(3 * len(most_active_stocks) / 4 + 1):len(most_active_stocks)])
+    print("doneeeeeeeeee")
+
+# all(x==thread[0] for x in threads)
+

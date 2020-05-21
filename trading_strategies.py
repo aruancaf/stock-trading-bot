@@ -1,3 +1,4 @@
+import threading
 import time
 from datetime import datetime
 
@@ -25,6 +26,8 @@ def trend_following(stock_database: [str]):
             time.sleep(0.05)
         except IndexError:
             print("No Data")
+
+    return True
 
 # def checkSell():
 #     json_simplifier.readJson()

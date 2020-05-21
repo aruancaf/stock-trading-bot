@@ -1,9 +1,8 @@
 import json
 import os
 from datetime import datetime
-from thread6 import thread6
+
 from portfolio_manager import PortfolioManager
-from threading import Lock
 
 
 def addToJson(fileName, ticker_stock, lock):
