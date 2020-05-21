@@ -1,22 +1,26 @@
 import json
 import os
 from datetime import datetime
-
-import portfolio_manager
+from thread6 import thread6
+from portfolio_manager import PortfolioManager
+from threading import Lock
 
 
 def addToJson(fileName, ticker_stock):
     stk = ticker_stock.get_info()['symbol']
-    with open(fileName, "r+") as file:
-        portfolio_manager.stocks = json.load(file)
-    if stk not in portfolio_manager.stocks:
+    if stk not in PortfolioManager.stocks:
         print("Buying {0}".format(stk))
         os.system("say beep")
-        with open(fileName, "r+") as file:
+        with Lock, open(fileName, "r+") as file:
             stk_history = ticker_stock.history("1d").iloc[0].to_dict()
             del stk_history['Dividends']
             del stk_history['Stock Splits']
             stk_history['Time'] = datetime.now().strftime("%H:%M:%S")
-            portfolio_manager.stocks.update({stk: stk_history})
+            PortfolioManager.stocks.update({stk: stk_history})
             file.seek(0)
-            json.dump(portfolio_manager.stocks, file, indent=4)
+            json.dump(PortfolioManager.stocks, file, indent=4)
+
+
+def readJson(fileName) -> None:
+    with open(fileName, "r+") as file:
+        PortfolioManager.stocks = json.load(file)

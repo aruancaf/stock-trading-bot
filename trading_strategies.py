@@ -1,4 +1,3 @@
-import json
 import time
 from datetime import datetime
 
@@ -22,14 +21,12 @@ def trend_following(stock_database: [str]):
             #  and (stk_price['High'] - stk_price['Close']) < 0.15
             if previous_2mo_high < stk_price['Close'] and (stk_price['High'] - stk_price['Close']) < 0.12:
                 json_simplifier.addToJson("stock_portfolio.json", ticker_stock)
-            time.sleep(1)
+            time.sleep(0.05)
         except IndexError:
-            print("Mo Data")
+            print("No Data")
 
-
-def checkSell():
-    with open("stock_portfolio.json", "r+") as file:
-        stocks = json.load(file)
-        for stk in stocks:
-            ticker_stock = yf.Ticker(stk)
-            stk_price = ticker_stock.history("1d").iloc[0]
+# def checkSell():
+#     json_simplifier.readJson()
+#         for stk in PortfolioManager.stocks:
+#             ticker_stock = yf.Ticker(stk)
+#             stk_price = ticker_stock.history("1d").iloc[0]
