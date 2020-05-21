@@ -6,12 +6,12 @@ from portfolio_manager import PortfolioManager
 from threading import Lock
 
 
-def addToJson(fileName, ticker_stock):
+def addToJson(fileName, ticker_stock, lock):
     stk = ticker_stock.get_info()['symbol']
     if stk not in PortfolioManager.stocks:
         print("Buying {0}".format(stk))
         os.system("say beep")
-        with Lock, open(fileName, "r+") as file:
+        with lock, open(fileName, "r+") as file:
             stk_history = ticker_stock.history("1d").iloc[0].to_dict()
             del stk_history['Dividends']
             del stk_history['Stock Splits']

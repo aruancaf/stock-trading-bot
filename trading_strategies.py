@@ -3,6 +3,7 @@ from datetime import datetime
 
 import yfinance as yf
 
+import trading_constants
 import yf_extender
 from utils import json_simplifier
 
@@ -19,8 +20,8 @@ def trend_following(stock_database: [str]):
             # print("Previous2MoHigh: {0} CurrentStockPrice: {1} ".format(previous_2mo_high, stk_price['Close']))
 
             #  and (stk_price['High'] - stk_price['Close']) < 0.15
-            if previous_2mo_high < stk_price['Close'] and (stk_price['High'] - stk_price['Close']) < 0.12:
-                json_simplifier.addToJson("stock_portfolio.json", ticker_stock)
+            if previous_2mo_high < stk_price['Close'] and (stk_price['High'] - stk_price['Close']) < 0.05:
+                json_simplifier.addToJson("stock_portfolio.json", ticker_stock, trading_constants.lock)
             time.sleep(0.05)
         except IndexError:
             print("No Data")
