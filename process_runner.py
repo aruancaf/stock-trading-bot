@@ -1,38 +1,23 @@
-import os
-import threading
-from collections import Counter
-from datetime import datetime
+import time
 
-import yfinance as yf
-
-import trading_constants
 import trading_strategies
 import yf_web_scraper
-from portfolio_manager import PortfolioManager
-from utils import json_simplifier, alerts, multithreading
+from utils import alerts, multithreading, json_simplifier
 
+#todo: fix
+portfolio_manager_test = json_simplifier.PortfolioManager()
 while True:
+    print("")
     most_active_stocks = yf_web_scraper.get_most_actives()
-    print("Position Polarity : {0}".format(PortfolioManager().get_position_polarity()))
-    print(most_active_stocks)
-    json_simplifier.addYFTickerToJson("stock_portfolio.json", yf.Ticker("APPN"), trading_constants.lock, 'Purchased')
-    current_price = yf.Ticker("APPN").history("1d").iloc[0]
-    buy_price = json_simplifier.delFromJsonReturnDict("stock_portfolio.json", yf.Ticker("APPN"), trading_constants.lock, 'Purchased')
-    del current_price['Dividends']
-    del current_price['Stock Splits']
-    del buy_price['Time']
-    print(current_price.to_dict())
-    print(buy_price)
-    current_price_counter = Counter(current_price.to_dict())
-    buy_price_counter = Counter(buy_price)
-    print("subtraction")
-    current_price_counter.subtract(buy_price_counter)
-    print(current_price_counter)
-    json_simplifier.addDictToJson("stock_portfolio.json", "APPN",  current_price_counter, trading_constants.lock, 'Sold')
-    multithreading.runChunkedThreads(most_active_stocks, trading_strategies.trend_following, 12)
-    # json_simplifier.addToJson("stock_portfolio.json", yf.Ticker("AAPL"), trading_constants.lock, 'Purchased')
-    # json_simplifier.delFromJson("stock_portfolio.json", yf.Ticker("APPN"), trading_constants.lock, 'Purchased')
-    # json_simplifier.addToJson("stock_portfolio.json", yf.Ticker("APPN"), trading_constants.lock, 'Sold')
+    print("Position Polarity : {0}".format(portfolio_manager_test.get_position_polarity()))
+    print("")
+
+    multithreading.runChunkedThreads(most_active_stocks, trading_strategies.trend_following, 15)
 
     alerts.sayBeep(3)
 
+    # time.sleep(3)
+    #
+    # for stk in portfolio_manager_test.stocks['Purchased']:
+    #     json_simplifier.sellStock(stk)
+    #     time.sleep(2)
