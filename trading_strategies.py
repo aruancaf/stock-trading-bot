@@ -1,4 +1,3 @@
-import threading
 import time
 from datetime import datetime
 
@@ -22,11 +21,10 @@ def trend_following(stock_database: [str]):
 
             #  and (stk_price['High'] - stk_price['Close']) < 0.15
             if previous_2mo_high < stk_price['Close'] and (stk_price['High'] - stk_price['Close']) < 0.05:
-                json_simplifier.addToJson("stock_portfolio.json", ticker_stock, trading_constants.lock)
+                json_simplifier.addToJson("stock_portfolio.json", ticker_stock, trading_constants.lock, 'Purchased')
             time.sleep(0.05)
         except IndexError:
             print("No Data")
-
     return True
 
 # def checkSell():
