@@ -1,23 +1,9 @@
-import time
-
 import trading_strategies
 import yf_web_scraper
-from utils import alerts, multithreading, json_simplifier
+from utils import multithreading
+import portfolio_manager
 
-#todo: fix
-portfolio_manager_test = json_simplifier.PortfolioManager()
 while True:
-    print("")
-    most_active_stocks = yf_web_scraper.get_most_actives()
-    print("Position Polarity : {0}".format(portfolio_manager_test.get_position_polarity()))
-    print("")
-
-    multithreading.run_chunked_threads(most_active_stocks, trading_strategies.trend_following, 45)
-
-    # alerts.sayBeep(3)
-
-    # time.sleep(3)
-    #
-    # for stk in portfolio_manager_test.stocks['Purchased']:
-    #     json_simplifier.sellStock(stk)
-    #     time.sleep(2)
+    most_active_stocks = yf_web_scraper.get_active_tickers()
+    portfolio_manager.get_position_polarity()
+    multithreading.run_chunked_threads(most_active_stocks, trading_strategies.trend_following, 40)

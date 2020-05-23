@@ -6,7 +6,6 @@ def run_chunked_threads(most_active_stocks, method, thread_count):
 
     threads = []
 
-
     for partition in partitioned_most_active_stock:
         threads.append(threading.Thread(target=method,
                                         args=[partition]))

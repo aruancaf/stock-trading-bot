@@ -4,34 +4,21 @@ from datetime import datetime
 
 import yfinance as yf
 
-import trading_constants
+import portfolio_manager
 import yf_extender
-from utils import json_simplifier
 
 
 def trend_following(stock_database: [str]):
     for stk in stock_database:
         try:
             ticker_stock = yf.Ticker(stk)
-            stk_price = ticker_stock.history("1d").iloc[0]
-
-            # get stock info
-            print("{0} price: {1} at {2}".format(stk, stk_price['Close'], datetime.now().strftime("%H:%M:%S")))
+            stock_info = yf_extender.get_stock_info(ticker_stock)
+            print("{0} price: {1} at {2}".format(stk, stock_info['Close'], datetime.now().strftime("%H:%M:%S")))
             sys.stdout.flush()
             previous_2mo_high = yf_extender.previous_2mo_high(ticker_stock)
-            # print("Previous2MoHigh: {0} CurrentStockPrice: {1} ".format(previous_2mo_high, stk_price['Close']))
-
-            #  and (stk_price['High'] - stk_price['Close']) < 0.15
-            if previous_2mo_high < stk_price['Close'] and (stk_price['High'] - stk_price['Close']) < 0.05:
-                json_simplifier.addYFTickerToJson("stock_portfolio.json", ticker_stock, trading_constants.lock,
-                                                  'Purchased')
+            if previous_2mo_high < stock_info['Close'] and (stock_info['High'] - stock_info['Close']) < 0.05:
+                portfolio_manager.buy_stock(ticker_stock)
             time.sleep(0.1)
         except IndexError:
             print("No Data")
     return True
-
-# def checkSell():
-#     json_simplifier.readJson()
-#         for stk in PortfolioManager.stocks:
-#             ticker_stock = yf.Ticker(stk)
-#             stk_price = ticker_stock.history("1d").iloc[0]
