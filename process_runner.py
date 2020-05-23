@@ -12,7 +12,7 @@ while True:
     print("Position Polarity : {0}".format(portfolio_manager_test.get_position_polarity()))
     print("")
 
-    multithreading.runChunkedThreads(most_active_stocks, trading_strategies.trend_following, 15)
+    multithreading.run_chunked_threads(most_active_stocks, trading_strategies.trend_following, 45)
 
     # alerts.sayBeep(3)
 
