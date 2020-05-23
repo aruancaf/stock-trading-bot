@@ -14,7 +14,7 @@ while True:
 
     multithreading.runChunkedThreads(most_active_stocks, trading_strategies.trend_following, 15)
 
-    alerts.sayBeep(3)
+    # alerts.sayBeep(3)
 
     # time.sleep(3)
     #
