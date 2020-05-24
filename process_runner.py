@@ -6,4 +6,4 @@ import portfolio_manager
 while True:
     most_active_stocks = yf_web_scraper.get_active_tickers()
     portfolio_manager.get_position_polarity()
-    multithreading.run_chunked_threads(most_active_stocks, trading_strategies.trend_following, 40)
+    multithreading.run_chunked_threads(most_active_stocks, trading_strategies.run_stock_pipelines, 35)

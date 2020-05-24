@@ -1,4 +1,5 @@
 from collections import Counter
+from datetime import datetime
 
 import yfinance as yf
 
@@ -30,13 +31,15 @@ def buy_stock(ticker: yf.Ticker):
 
 def sell_stock(ticker: yf.Ticker):
     stock_info = yf_extender.get_stock_info(ticker)
+
     purchased_stock_info = json_simplifier.delFromJsonReturnDict("stock_portfolio.json", ticker,
                                                                  'Purchased')
 
     del purchased_stock_info['Time']
-    current_price_counter = Counter(stock_info)
-    buy_price_counter = Counter(purchased_stock_info)
-    current_price_counter.subtract(buy_price_counter)
-    json_simplifier.addDictToJson("stock_portfolio.json", ticker, current_price_counter,
+    stock_price_counter = Counter(stock_info)
+    purchased_stock_counter = Counter(purchased_stock_info)
+    stock_price_counter.subtract(purchased_stock_counter)
+    stock_price_counter['Time'] = datetime.now().strftime("%H:%M:%S")
+    json_simplifier.addDictToJson("stock_portfolio.json", ticker, stock_price_counter,
                                   'Sold')
     print("Selling {0}".format(ticker.get_info()['symbol']))
