@@ -53,5 +53,5 @@ def evaluate_purchased_stocks():
         ticker = yf.Ticker(ticker_symbol)
         stock_info = yf_extender.get_stock_info(ticker)
         if stock_info['Close'] <= yf_extender.calculate_ema(ticker) or yf_extender.get_high2current_price_change_percent(
-                ticker) > 0.3:
+                ticker) < -0.3:
             portfolio_manager.sell_stock(ticker)
