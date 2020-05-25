@@ -1,13 +1,13 @@
 {
-  "Purchased": {
-    "JMPLF": {
-      "Open": 24.67,
-      "High": 24.86,
-      "Low": 24.67,
-      "Close": 24.86,
-      "Volume": 18900.0,
-      "Time": "22:03:42"
-    }
-  },
-  "Sold": {}
+    "Purchased": {
+        "JMPLF": {
+            "Open": 24.67,
+            "High": 24.86,
+            "Low": 24.67,
+            "Close": 24.86,
+            "Volume": 18900.0,
+            "Time": "00:08:41"
+        }
+    },
+    "Sold": {}
 }

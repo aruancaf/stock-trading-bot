@@ -39,9 +39,7 @@ def ema_crossover(ticker_symbol: str):
         ticker_ema = yf_extender.calculate_ema(ticker)
         ticker_yesterday_ema = yf_extender.calculate_yesterday_ema(ticker)
 
-        if stock_info['Close'] - ticker_ema > trading_constants.ema_cross_threshold and \
-                stock_history.iloc[len(stock_history) - 2].to_dict()['Close'] < ticker_yesterday_ema and stock_info[
-            'Close'] > ticker_ema:
+        if stock_info['Close'] - ticker_ema > trading_constants.ema_cross_threshold and stock_history.iloc[len(stock_history) - 2].to_dict()['Close'] < ticker_yesterday_ema and stock_info['Close'] > ticker_ema:
             print("{0} ema: {1} yesterday_ema: {2} current_price {3}".format(ticker_symbol, ticker_ema,
                                                                              ticker_yesterday_ema, stock_info['Close']))
             return 0.5
@@ -55,5 +53,5 @@ def evaluate_purchased_stocks():
         ticker = yf.Ticker(ticker_symbol)
         stock_info = yf_extender.get_stock_info(ticker)
         if stock_info['Close'] <= yf_extender.calculate_ema(ticker) or yf_extender.get_high2current_price_change_percent(
-                ticker) < 0.3:
+                ticker) > 0.3:
             portfolio_manager.sell_stock(ticker)
