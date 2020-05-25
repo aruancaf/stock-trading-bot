@@ -5,8 +5,8 @@ from datetime import datetime
 
 import yfinance as yf
 
-import yf_extender
 import portfolio_manager
+import yf_extender
 
 lock = threading.Lock()
 

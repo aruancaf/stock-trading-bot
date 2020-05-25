@@ -3,9 +3,10 @@ from datetime import datetime
 
 import yfinance as yf
 
+import portfolio_manager
+import trading_constants
 import yf_extender
 from utils import json_simplifier
-import portfolio_manager
 
 stocks = {"Purchased": {}, "Sold": {}}
 
@@ -25,8 +26,9 @@ def get_position_polarity() -> float:
 
 
 def buy_stock(ticker: yf.Ticker):
-    json_simplifier.addYFTickerToJson('stock_portfolio.json', ticker, 'Purchased')
-    print("Buying {0}".format(ticker.get_info()['symbol']))
+    if yf_extender.get_ticker_symbol(ticker) not in trading_constants.blacklist:
+        json_simplifier.addYFTickerToJson('stock_portfolio.json', ticker, 'Purchased')
+        print("Buying {0}".format(ticker.get_info()['symbol']))
 
 
 def sell_stock(ticker: yf.Ticker):
