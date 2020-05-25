@@ -16,6 +16,7 @@ def run_stock_pipelines(stock_database: [str]):
             print("{0} price: {1} at {2}".format(ticker_symbol,
                                                  yf_extender.get_stock_info(yf.Ticker(ticker_symbol))['Close'],
                                                  datetime.now().strftime("%H:%M:%S")))
+        evaluate_purchased_stocks()
 
 
 def trend_following(ticker_symbol: str):
@@ -52,6 +53,11 @@ def evaluate_purchased_stocks():
     for ticker_symbol in portfolio_manager.stocks['Purchased']:
         ticker = yf.Ticker(ticker_symbol)
         stock_info = yf_extender.get_stock_info(ticker)
+        print()
+
+        print(yf_extender.get_high2current_price_change_percent(
+                ticker))
+        print()
         if stock_info['Close'] <= yf_extender.calculate_ema(ticker) or yf_extender.get_high2current_price_change_percent(
                 ticker) < -0.3:
             portfolio_manager.sell_stock(ticker)
