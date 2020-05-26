@@ -11,11 +11,12 @@ def run_stock_pipelines(stock_database: [str]):
     for ticker_symbol in stock_database:
         trend_following_confidence = trend_following(ticker_symbol)
         ema_crossover_confidence = ema_crossover(ticker_symbol)
+        print("{0} price: {1} at {2}".format(ticker_symbol,
+                                             yf_extender.get_stock_info(yf.Ticker(ticker_symbol))['Close'],
+                                             datetime.now().strftime("%H:%M:%S")))
         if trend_following_confidence and ema_crossover_confidence is not None and trend_following_confidence + ema_crossover_confidence >= 0.5:
             portfolio_manager.buy_stock(yf.Ticker(ticker_symbol))
-            print("{0} price: {1} at {2}".format(ticker_symbol,
-                                                 yf_extender.get_stock_info(yf.Ticker(ticker_symbol))['Close'],
-                                                 datetime.now().strftime("%H:%M:%S")))
+
         evaluate_purchased_stocks()
 
 
@@ -24,7 +25,7 @@ def trend_following(ticker_symbol: str):
         ticker = yf.Ticker(ticker_symbol)
         stock_info = yf_extender.get_stock_info(ticker)
         previous_2mo_high = yf_extender.previous_high(ticker, "2mo")
-        if previous_2mo_high < stock_info['Close'] and (stock_info['High'] - stock_info['Close']) < 0.05:
+        if previous_2mo_high < stock_info['Close'] and (stock_info['High'] - stock_info['Close']) < 0.1:
             return 0.3
         return 0
     except IndexError:
@@ -53,11 +54,6 @@ def evaluate_purchased_stocks():
     for ticker_symbol in portfolio_manager.stocks['Purchased']:
         ticker = yf.Ticker(ticker_symbol)
         stock_info = yf_extender.get_stock_info(ticker)
-        print()
-
-        print(yf_extender.get_high2current_price_change_percent(
-                ticker))
-        print()
         if stock_info['Close'] <= yf_extender.calculate_ema(ticker) or yf_extender.get_high2current_price_change_percent(
-                ticker) < -0.3:
+                ticker) < -0.005:
             portfolio_manager.sell_stock(ticker)
