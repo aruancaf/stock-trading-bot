@@ -4,7 +4,6 @@ from datetime import datetime
 import yfinance as yf
 
 import portfolio_manager
-import trading_constants
 import yf_extender
 from utils import json_simplifier
 
@@ -25,14 +24,30 @@ def get_position_polarity() -> float:
     return position_polarity
 
 
+def get_adjusted_position_polarity():
+    position_polarity = 0
+    portfolio_manager.stocks = json_simplifier.readJson('stock_portfolio.json')
+    ticker_changes = []
+    for i in stocks['Purchased']:
+        mult_factor = 1000 / stocks['Purchased'][i]['Close']
+        polarity_stock = yf_extender.get_stock_info(yf.Ticker(i))['Close'] * mult_factor - 1000
+        ticker_changes.append("{0} {1}".format(i, polarity_stock))
+        position_polarity += polarity_stock
+
+    print("Adjusted Position Polarity : {0}".format(position_polarity))
+    print(ticker_changes)
+    return position_polarity
+
+
 def buy_stock(ticker: yf.Ticker):
-    if yf_extender.get_ticker_symbol(ticker) not in trading_constants.blacklist:
-        json_simplifier.addYFTickerToJson('stock_portfolio.json', ticker, 'Purchased')
-        print("Buying {0}".format(ticker.get_info()['symbol']))
+    json_simplifier.addYFTickerToJson('stock_portfolio.json', ticker, 'Purchased')
+    print("Buying {0}".format(ticker.get_info()['symbol']))
 
 
 def sell_stock(ticker: yf.Ticker):
+    portfolio_manager.stocks = json_simplifier.readJson('stock_portfolio.json')
     stock_info = yf_extender.get_stock_info(ticker)
+    ticker_symbol = yf_extender.get_ticker_symbol(ticker)
 
     purchased_stock_info = json_simplifier.delFromJsonReturnDict("stock_portfolio.json", ticker,
                                                                  'Purchased')

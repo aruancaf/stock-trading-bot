@@ -58,18 +58,15 @@ def delFromJson(delFrom: str, ticker: yf.Ticker, category: str) -> yf.Ticker:
             file.truncate(0)
             json.dump(portfolio_manager.stocks, file, indent=4)
             return ticker
-    else:
-        return None
 
 
 def delFromJsonReturnDict(delFrom: str, ticker: yf.Ticker, category: str):
     ticker_symbol = yf_extender.get_ticker_symbol(ticker)
     portfolio_manager.stocks = readJson(delFrom)
+    print("deleting askdjf;alskjfd;laksdf " + ticker_symbol)
 
     if ticker_symbol in portfolio_manager.stocks[category]:
         with lock, open(delFrom, "r+") as file:
-            stock_info = yf_extender.get_stock_info(ticker)
-            stock_info['Time'] = datetime.now().strftime("%H:%M:%S")
             temp = portfolio_manager.stocks[category][ticker_symbol]
             del portfolio_manager.stocks[category][ticker_symbol]
             file.seek(0)
