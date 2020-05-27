@@ -17,6 +17,9 @@ def run_chunked_threads(most_active_stocks, method, thread_count):
 
     threads[0].join()
 
+    # for thread in threads:
+    #     thread.stop()
+
 
 def partition_array(arr, partition_count):
     k, m = divmod(len(arr), partition_count)

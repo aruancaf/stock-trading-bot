@@ -1,3 +1,4 @@
+import sys
 import time
 from datetime import datetime
 
@@ -30,7 +31,7 @@ def trend_following(ticker_symbol: str):
         ticker = yf.Ticker(ticker_symbol)
         stock_info = yf_extender.get_stock_info(ticker)
         previous_2mo_high = yf_extender.previous_high(ticker, "2mo")
-        if previous_2mo_high < stock_info['Close'] and (stock_info['High'] - stock_info['Close']) < 0.1:
+        if previous_2mo_high < stock_info['Close'] and (stock_info['High'] - stock_info['Close']) < 0.07:
             return 0.5
         return 0
     except IndexError:

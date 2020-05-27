@@ -5,6 +5,7 @@ import portfolio_manager
 
 lock = threading.Lock()
 
+
 def updated_purchased():
     with lock, open('purchased.json', "r+") as file:
         file.truncate(0)
