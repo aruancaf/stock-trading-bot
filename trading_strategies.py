@@ -14,6 +14,7 @@ def run_stock_pipelines(stock_database: [str]):
             try:
                 trend_following_confidence = trend_following(ticker_symbol)
                 ema_crossover_confidence = ema_crossover(ticker_symbol)
+
                 print("{0} price: {1} at {2}".format(ticker_symbol,
                                                      yf_extender.get_stock_info(yf.Ticker(ticker_symbol))['Close'],
                                                      datetime.now().strftime("%H:%M:%S")))
@@ -48,6 +49,8 @@ def ema_crossover(ticker_symbol: str):
         if stock_info['Close'] - ticker_ema > trading_constants.ema_cross_threshold and \
                 stock_history.iloc[len(stock_history) - 2].to_dict()['Close'] < ticker_yesterday_ema and stock_info[
             'Close'] > ticker_ema:
+            print("{0} ema: {1} yesterday_ema: {2} current_price {3}".format(ticker_symbol, ticker_ema,
+                                                                             ticker_yesterday_ema, stock_info['Close']))
             return 0.5
         return 0
     except IndexError:
@@ -56,7 +59,7 @@ def ema_crossover(ticker_symbol: str):
 
 def evaluate_purchased_stocks():
     while True:
-        for ticker_symbol in portfolio_manager.purchased:
+        for ticker_symbol in dict(portfolio_manager.purchased):
             ticker = yf.Ticker(ticker_symbol)
             stock_info = yf_extender.get_stock_info(ticker)
             if stock_info['Close'] <= yf_extender.calculate_ema(
@@ -70,4 +73,4 @@ def evaluate_purchased_stocks():
                 time.sleep(0.2)
                 portfolio_manager.sell_stock(ticker)
                 break
-            time.sleep(0.2)
+            time.sleep(0.5)
