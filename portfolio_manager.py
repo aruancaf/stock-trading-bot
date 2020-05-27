@@ -3,60 +3,60 @@ from datetime import datetime
 
 import yfinance as yf
 
-import portfolio_manager
-import yf_extender
-from utils import json_simplifier
+import utils.json_simplifier as json_simpl
+import yf_extender as yf_ext
 
-stocks = {"Purchased": {}, "Sold": {}}
-
-
-def get_position_polarity() -> float:
-    position_polarity = 0
-    portfolio_manager.stocks = json_simplifier.readJson('stock_portfolio.json')
-    ticker_changes = []
-    for i in stocks['Purchased']:
-        polarity_stock = yf_extender.get_stock_info(yf.Ticker(i))['Close'] - stocks['Purchased'][i]['Close']
-        ticker_changes.append("{0} {1}".format(i, polarity_stock))
-        position_polarity += polarity_stock
-
-    print("Position Polarity : {0}".format(position_polarity))
-    print(ticker_changes)
-    return position_polarity
-
-
-def get_adjusted_position_polarity():
-    position_polarity = 0
-    portfolio_manager.stocks = json_simplifier.readJson('stock_portfolio.json')
-    ticker_changes = []
-    for i in stocks['Purchased']:
-        mult_factor = 1000 / stocks['Purchased'][i]['Close']
-        polarity_stock = yf_extender.get_stock_info(yf.Ticker(i))['Close'] * mult_factor - 1000
-        ticker_changes.append("{0} {1}".format(i, polarity_stock))
-        position_polarity += polarity_stock
-
-    print("Adjusted Position Polarity : {0}".format(position_polarity))
-    print(ticker_changes)
-    return position_polarity
+purchased = {}
+sold = {}
 
 
 def buy_stock(ticker: yf.Ticker):
-    json_simplifier.addYFTickerToJson('stock_portfolio.json', ticker, 'Purchased')
-    print("Buying {0}".format(ticker.get_info()['symbol']))
+    ticker_symbol = yf_ext.get_ticker_symbol(ticker)
+    json_simpl.read_json()
+
+    if ticker_symbol not in purchased:
+        purchased[ticker_symbol] = yf_ext.get_stock_info(ticker)
+    json_simpl.updated_purchased()
+    json_simpl.read_json()
+    print("Buying", ticker_symbol)
 
 
 def sell_stock(ticker: yf.Ticker):
-    portfolio_manager.stocks = json_simplifier.readJson('stock_portfolio.json')
-    stock_info = yf_extender.get_stock_info(ticker)
-    ticker_symbol = yf_extender.get_ticker_symbol(ticker)
+    ticker_symbol = yf_ext.get_ticker_symbol(ticker)
+    json_simpl.read_json()
 
-    purchased_stock_info = json_simplifier.delFromJsonReturnDict("stock_portfolio.json", ticker,
-                                                                 'Purchased')
+    if ticker_symbol not in sold:
+        stock_info = Counter(yf_ext.get_stock_info(ticker))
+        purchase_info = Counter(purchased.pop(ticker_symbol))
+        stock_info.pop('Time')
+        purchase_info.pop('Time')
+        stock_info.subtract(purchase_info)
+        stock_info['Time'] = datetime.now().strftime("%H:%M:%S")
+        sold[ticker_symbol] = stock_info
 
-    del purchased_stock_info['Time']
-    stock_price_counter = Counter(stock_info)
-    purchased_stock_counter = Counter(purchased_stock_info)
-    stock_price_counter.subtract(purchased_stock_counter)
-    stock_price_counter['Time'] = datetime.now().strftime("%H:%M:%S")
-    json_simplifier.addDictToJson("stock_portfolio.json", ticker, stock_price_counter,
-                                  'Sold')
-    print("Selling {0}".format(ticker.get_info()['symbol']))
+    else:
+        stock_info = Counter(yf_ext.get_stock_info(ticker))
+        purchase_info = Counter(purchased.pop(ticker_symbol))
+        sold_info = Counter(sold.pop(ticker_symbol))
+        stock_info.pop('Time')
+        purchase_info.pop('Time')
+        sold_info.pop('Time')
+        print(stock_info)
+        print(purchase_info)
+        stock_info.subtract(purchase_info)
+        print(stock_info)
+
+        for i in stock_info and sold_info:
+            stock_info[i] = stock_info[i] + sold_info[i]
+        stock_info['Time'] = datetime.now().strftime("%H:%M:%S")
+        sold[ticker_symbol] = stock_info
+
+    json_simpl.updated_purchased()
+    json_simpl.updated_sold()
+    json_simpl.read_json()
+    print("Selling", ticker_symbol)
+
+# def get_position_polarity() -> float:
+
+
+# def get_adjusted_position_polarity():

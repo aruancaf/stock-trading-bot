@@ -1,4 +1,5 @@
 import sys
+from datetime import datetime
 
 import yfinance as yf
 
@@ -9,6 +10,7 @@ def get_ticker_symbol(ticker: yf.Ticker) -> str:
 
 def get_stock_info(ticker: yf.Ticker) -> {}:
     stock_info = ticker.history("1d").iloc[0].to_dict()
+    stock_info['Time'] = datetime.now().strftime("%H:%M:%S")
     del stock_info['Dividends']
     del stock_info['Stock Splits']
     return stock_info
