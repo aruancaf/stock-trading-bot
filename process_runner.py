@@ -7,4 +7,4 @@ while True:
     most_active_stocks = yf_web_scraper.get_active_tickers()
     print(most_active_stocks)
     multithreading.run_thread(trading_strategies.evaluate_purchased_stocks)
-    multithreading.run_chunked_threads(most_active_stocks, trading_strategies.run_stock_pipelines, 30)
+    multithreading.run_chunked_threads(most_active_stocks, trading_strategies.run_stock_pipelines, 32)
