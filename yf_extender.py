@@ -8,7 +8,7 @@ def get_ticker_symbol(ticker: yf.Ticker) -> str:
     return ticker.get_info()['symbol']
 
 
-def get_stock_info(ticker: yf.Ticker) -> {}:
+def get_stock_state(ticker: yf.Ticker) -> {}:
     stock_info = ticker.history("1d").iloc[0].to_dict()
     stock_info['Time'] = datetime.now().strftime("%H:%M:%S")
     del stock_info['Dividends']
@@ -43,7 +43,7 @@ def calculate_sma(ticker: yf.Ticker, time_period="1mo") -> float:
 # Valid periods: 1d,5d,1mo,3mo,6mo,1y,2y,5y,10y,ytd,max
 def calculate_ema(ticker: yf.Ticker, time_period="1mo") -> float:
     stock_history = ticker.history(time_period)
-    return get_stock_info(ticker)['Close'] * (2 / (1 + len(stock_history))) + calculate_sma(ticker, time_period) * (
+    return get_stock_state(ticker)['Close'] * (2 / (1 + len(stock_history))) + calculate_sma(ticker, time_period) * (
             1 - (2 / (1 + len(stock_history))))
 
 

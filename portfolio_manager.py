@@ -11,12 +11,14 @@ purchased = {}
 sold = {}
 
 
-def buy_stock(ticker: yf.Ticker):
+def buy_stock(ticker: yf.Ticker, quantity: int):
     ticker_symbol = yf_ext.get_ticker_symbol(ticker)
     json_simp.read_json()
 
     if ticker_symbol not in purchased:
-        purchased[ticker_symbol] = yf_ext.get_stock_info(ticker)
+        stock_info = yf_ext.get_stock_state(ticker)
+        stock_info['Quantity'] = quantity
+        purchased[ticker_symbol] = stock_info
         print("Buying", ticker_symbol)
         alerts.sayBeep(1)
 
@@ -29,7 +31,7 @@ def sell_stock(ticker: yf.Ticker):
     json_simp.read_json()
 
     if ticker_symbol not in sold:
-        stock_info = Counter(yf_ext.get_stock_info(ticker))
+        stock_info = Counter(yf_ext.get_stock_state(ticker))
         purchase_info = Counter(purchased.pop(ticker_symbol))
         stock_info.pop('Time')
         purchase_info.pop('Time')
@@ -38,7 +40,7 @@ def sell_stock(ticker: yf.Ticker):
         sold[ticker_symbol] = stock_info
 
     elif ticker_symbol in purchased:
-        stock_info = Counter(yf_ext.get_stock_info(ticker))
+        stock_info = Counter(yf_ext.get_stock_state(ticker))
         purchase_info = Counter(purchased.pop(ticker_symbol))
         sold_info = Counter(sold.pop(ticker_symbol))
         stock_info.pop('Time')
@@ -64,7 +66,7 @@ def get_position_polarity() -> float:
     polarity = 0.0
     print("Holding")
     for i in purchased:
-        stock_polarity = yf_ext.get_stock_info(yf.Ticker(i))['Close'] - purchased[i]['Close']
+        stock_polarity = yf_ext.get_stock_state(yf.Ticker(i))['Close'] - purchased[i]['Close']
         polarity += stock_polarity
         print("{0} {1}".format(i, stock_polarity))
     print("Holding Position polarity {0}".format(polarity))
@@ -78,21 +80,20 @@ def get_position_polarity() -> float:
     return polarity
 
 
-def get_adjusted_position_polarity():
+def print_adjusted_position_polarity():
     json_simp.read_json()
 
     polarity = 0.0
     print("Holding")
     for i in purchased:
-        stock_polarity = yf_ext.get_stock_info(yf.Ticker(i))['Close'] * (100 / purchased[i]['Close']) - 100
+        stock_polarity = (yf_ext.get_stock_state(yf.Ticker(i))['Close'] - purchased[i]['Close']) * purchased[i]['Quantity']
         polarity += stock_polarity
         print("{0} {1}".format(i, stock_polarity))
-    print("Holding Position polarity {0}".format(polarity))
+    print("Holding Position profits {0}".format(polarity))
     print("Sold")
     polarity = 0.0
     for i in sold:
-        stock_polarity = sold[i]['Close']
+        stock_polarity = sold[i]['Close'] * abs(sold[i]['Quantity'])
         polarity += stock_polarity
         print("{0} {1}".format(i, stock_polarity))
-    print("Sold Position polarity {0}".format(polarity))
-    return stock_polarity
+    print("Sold Position profits {0}".format(polarity))

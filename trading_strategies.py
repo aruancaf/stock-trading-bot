@@ -17,10 +17,10 @@ def run_stock_pipelines(stock_database: [str]):
                 ema_crossover_confidence = ema_crossover(ticker_symbol)
 
                 print("{0} price: {1} at {2}".format(ticker_symbol,
-                                                     yf_extender.get_stock_info(yf.Ticker(ticker_symbol))['Close'],
+                                                     yf_extender.get_stock_state(yf.Ticker(ticker_symbol))['Close'],
                                                      datetime.now().strftime("%H:%M:%S")))
                 if trend_following_confidence and ema_crossover_confidence is not None and trend_following_confidence + ema_crossover_confidence >= 0.5:
-                    portfolio_manager.buy_stock(yf.Ticker(ticker_symbol))
+                    portfolio_manager.buy_stock(yf.Ticker(ticker_symbol), 5)
 
             except IndexError:
                 print("No data")
@@ -29,7 +29,7 @@ def run_stock_pipelines(stock_database: [str]):
 def trend_following(ticker_symbol: str):
     try:
         ticker = yf.Ticker(ticker_symbol)
-        stock_info = yf_extender.get_stock_info(ticker)
+        stock_info = yf_extender.get_stock_state(ticker)
         previous_2mo_high = yf_extender.previous_high(ticker, "2mo")
         if previous_2mo_high < stock_info['Close'] and (stock_info['High'] - stock_info['Close']) < 0.07:
             return 0.5
@@ -42,7 +42,7 @@ def trend_following(ticker_symbol: str):
 def ema_crossover(ticker_symbol: str):
     try:
         ticker = yf.Ticker(ticker_symbol)
-        stock_info = yf_extender.get_stock_info(ticker)
+        stock_info = yf_extender.get_stock_state(ticker)
         stock_history = ticker.history("5d")
         ticker_ema = yf_extender.calculate_ema(ticker)
         ticker_yesterday_ema = yf_extender.calculate_yesterday_ema(ticker)
@@ -62,15 +62,15 @@ def evaluate_purchased_stocks():
     while True:
         for ticker_symbol in dict(portfolio_manager.purchased):
             ticker = yf.Ticker(ticker_symbol)
-            stock_info = yf_extender.get_stock_info(ticker)
-            if stock_info['Close'] <= yf_extender.calculate_ema(
+            stock_info = yf_extender.get_stock_state(ticker)
+            if stock_info['Close'] < yf_extender.calculate_ema(
                     ticker):
                 print("Because stock price dropped below EMA line, ")
                 time.sleep(0.2)
                 portfolio_manager.sell_stock(ticker)
                 break
             elif yf_extender.get_high2current_price_change_percent(ticker) < -0.0025:
-                print("Because high 2 current price change is large ")
+                print("Because high 2 current price change is large {0}".format(yf_extender.get_high2current_price_change_percent(ticker)))
                 time.sleep(0.2)
                 portfolio_manager.sell_stock(ticker)
                 break
