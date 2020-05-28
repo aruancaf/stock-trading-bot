@@ -1,4 +1,4 @@
-import sys
+import math
 import time
 from datetime import datetime
 
@@ -20,7 +20,11 @@ def run_stock_pipelines(stock_database: [str]):
                                                      yf_extender.get_stock_state(yf.Ticker(ticker_symbol))['Close'],
                                                      datetime.now().strftime("%H:%M:%S")))
                 if trend_following_confidence and ema_crossover_confidence is not None and trend_following_confidence + ema_crossover_confidence >= 0.5:
-                    portfolio_manager.buy_stock(yf.Ticker(ticker_symbol), 5)
+                    stock_quantity = math.floor(
+                        portfolio_manager.buying_power * trading_constants.max_investment_partition * (
+                                trend_following_confidence + ema_crossover_confidence) / yf_extender.get_stock_state(yf.Ticker(ticker_symbol))['Close'])
+                    if stock_quantity > 0:
+                        portfolio_manager.buy_stock(yf.Ticker(ticker_symbol),  stock_quantity)
 
             except IndexError:
                 print("No data")
@@ -31,7 +35,8 @@ def trend_following(ticker_symbol: str):
         ticker = yf.Ticker(ticker_symbol)
         stock_info = yf_extender.get_stock_state(ticker)
         previous_2mo_high = yf_extender.previous_high(ticker, "2mo")
-        if previous_2mo_high < stock_info['Close'] and (stock_info['High'] - stock_info['Close']) < 0.07:
+        if previous_2mo_high < stock_info['Close'] and yf_extender.get_high2current_price_change_percent(
+                ticker) > -0.0025:
             return 0.5
         return 0
     except IndexError:
@@ -69,8 +74,9 @@ def evaluate_purchased_stocks():
                 time.sleep(0.2)
                 portfolio_manager.sell_stock(ticker)
                 break
-            elif yf_extender.get_high2current_price_change_percent(ticker) < -0.0025:
-                print("Because high 2 current price change is large {0}".format(yf_extender.get_high2current_price_change_percent(ticker)))
+            elif yf_extender.get_high2current_price_change_percent(ticker) < -0.0035:
+                print("Because high 2 current price change is large {0}".format(
+                    yf_extender.get_high2current_price_change_percent(ticker)))
                 time.sleep(0.2)
                 portfolio_manager.sell_stock(ticker)
                 break

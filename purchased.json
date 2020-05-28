@@ -1,3 +1,299 @@
 {
-
+    "KFY": {
+        "Open": 31.75,
+        "High": 32.44,
+        "Low": 31.19,
+        "Close": 32.42,
+        "Volume": 310900.0,
+        "Time": "01:46:46",
+        "Quantity": 9
+    },
+    "TEVA": {
+        "Open": 12.49,
+        "High": 12.92,
+        "Low": 12.09,
+        "Close": 12.91,
+        "Volume": 16011000.0,
+        "Time": "01:46:47",
+        "Quantity": 23
+    },
+    "VTR": {
+        "Open": 36.87,
+        "High": 37.39,
+        "Low": 34.52,
+        "Close": 37.37,
+        "Volume": 6528000.0,
+        "Time": "01:46:47",
+        "Quantity": 8
+    },
+    "GGB": {
+        "Open": 2.35,
+        "High": 2.54,
+        "Low": 2.33,
+        "Close": 2.54,
+        "Volume": 9597000.0,
+        "Time": "01:46:52",
+        "Quantity": 118
+    },
+    "DFS": {
+        "Open": 47.27,
+        "High": 49.62,
+        "Low": 46.95,
+        "Close": 49.6,
+        "Volume": 8439900.0,
+        "Time": "01:46:52",
+        "Quantity": 6
+    },
+    "MDC": {
+        "Open": 35.0,
+        "High": 36.71,
+        "Low": 34.58,
+        "Close": 36.69,
+        "Volume": 528500.0,
+        "Time": "01:47:05",
+        "Quantity": 8
+    },
+    "MHO": {
+        "Open": 33.72,
+        "High": 36.49,
+        "Low": 33.72,
+        "Close": 36.49,
+        "Volume": 460100.0,
+        "Time": "01:47:31",
+        "Quantity": 1
+    },
+    "CNK": {
+        "Open": 16.21,
+        "High": 17.26,
+        "Low": 15.82,
+        "Close": 17.24,
+        "Volume": 6044000.0,
+        "Time": "01:47:31",
+        "Quantity": 4
+    },
+    "DHI": {
+        "Open": 57.72,
+        "High": 58.83,
+        "Low": 56.82,
+        "Close": 58.83,
+        "Volume": 7514500.0,
+        "Time": "01:47:37",
+        "Quantity": 2
+    },
+    "ETM": {
+        "Open": 1.78,
+        "High": 1.96,
+        "Low": 1.71,
+        "Close": 1.96,
+        "Volume": 1814500.0,
+        "Time": "01:47:52",
+        "Quantity": 50
+    },
+    "RLGY": {
+        "Open": 5.91,
+        "High": 6.31,
+        "Low": 5.65,
+        "Close": 6.31,
+        "Volume": 3833000.0,
+        "Time": "01:47:53",
+        "Quantity": 15
+    },
+    "DDAIF": {
+        "Open": 38.97,
+        "High": 39.6,
+        "Low": 38.31,
+        "Close": 39.6,
+        "Volume": 62800.0,
+        "Time": "01:47:56",
+        "Quantity": 2
+    },
+    "NKRKY": {
+        "Open": 11.93,
+        "High": 12.0,
+        "Low": 11.8,
+        "Close": 12.0,
+        "Volume": 20700.0,
+        "Time": "01:48:01",
+        "Quantity": 8
+    },
+    "PBR-A": {
+        "Open": 7.5,
+        "High": 7.58,
+        "Low": 7.21,
+        "Close": 7.57,
+        "Volume": 19383600.0,
+        "Time": "01:48:01",
+        "Quantity": 13
+    },
+    "TOL": {
+        "Open": 32.0,
+        "High": 33.03,
+        "Low": 30.6,
+        "Close": 33.0,
+        "Volume": 5230600.0,
+        "Time": "01:48:16",
+        "Quantity": 1
+    },
+    "TEX": {
+        "Open": 16.33,
+        "High": 17.17,
+        "Low": 16.14,
+        "Close": 17.15,
+        "Volume": 1300000.0,
+        "Time": "01:48:22",
+        "Quantity": 3
+    },
+    "BIG": {
+        "Open": 36.5,
+        "High": 39.03,
+        "Low": 35.96,
+        "Close": 39.02,
+        "Volume": 2683000.0,
+        "Time": "01:48:30",
+        "Quantity": 1
+    },
+    "AER": {
+        "Open": 31.7,
+        "High": 33.03,
+        "Low": 31.24,
+        "Close": 33.02,
+        "Volume": 2933500.0,
+        "Time": "01:48:37",
+        "Quantity": 1
+    },
+    "EBAY": {
+        "Open": 43.3,
+        "High": 44.18,
+        "Low": 42.86,
+        "Close": 44.15,
+        "Volume": 8705400.0,
+        "Time": "01:48:37",
+        "Quantity": 1
+    },
+    "ABEV": {
+        "Open": 2.5,
+        "High": 2.59,
+        "Low": 2.42,
+        "Close": 2.59,
+        "Volume": 50626600.0,
+        "Time": "01:48:46",
+        "Quantity": 17
+    },
+    "ITVPF": {
+        "Open": 0.99,
+        "High": 0.99,
+        "Low": 0.99,
+        "Close": 0.99,
+        "Volume": 228100.0,
+        "Time": "01:48:52",
+        "Quantity": 36
+    },
+    "FF": {
+        "Open": 12.65,
+        "High": 12.95,
+        "Low": 12.42,
+        "Close": 12.92,
+        "Volume": 225900.0,
+        "Time": "01:48:55",
+        "Quantity": 2
+    },
+    "FITB": {
+        "Open": 20.12,
+        "High": 20.98,
+        "Low": 19.7,
+        "Close": 20.97,
+        "Volume": 9497000.0,
+        "Time": "01:49:01",
+        "Quantity": 1
+    },
+    "ZUMZ": {
+        "Open": 24.17,
+        "High": 25.33,
+        "Low": 23.84,
+        "Close": 25.3,
+        "Volume": 455000.0,
+        "Time": "01:49:02",
+        "Quantity": 1
+    },
+    "KSS": {
+        "Open": 20.54,
+        "High": 22.31,
+        "Low": 20.31,
+        "Close": 22.29,
+        "Volume": 18641600.0,
+        "Time": "01:49:02",
+        "Quantity": 1
+    },
+    "ANZBY": {
+        "Open": 11.87,
+        "High": 11.95,
+        "Low": 11.8,
+        "Close": 11.95,
+        "Volume": 227700.0,
+        "Time": "01:49:04",
+        "Quantity": 2
+    },
+    "FHN": {
+        "Open": 10.01,
+        "High": 10.29,
+        "Low": 9.62,
+        "Close": 10.27,
+        "Volume": 5950800.0,
+        "Time": "01:49:10",
+        "Quantity": 1
+    },
+    "LTHM": {
+        "Open": 6.83,
+        "High": 7.06,
+        "Low": 6.51,
+        "Close": 7.06,
+        "Volume": 2807700.0,
+        "Time": "01:49:11",
+        "Quantity": 1
+    },
+    "AMKR": {
+        "Open": 10.61,
+        "High": 10.99,
+        "Low": 10.13,
+        "Close": 10.97,
+        "Volume": 1510100.0,
+        "Time": "01:49:48",
+        "Quantity": 1
+    },
+    "CIG-C": {
+        "Open": 2.125,
+        "High": 2.2,
+        "Low": 2.09,
+        "Close": 2.2,
+        "Volume": 15990.0,
+        "Time": "01:50:03",
+        "Quantity": 5
+    },
+    "CONN": {
+        "Open": 7.5,
+        "High": 7.8,
+        "Low": 7.12,
+        "Close": 7.79,
+        "Volume": 963500.0,
+        "Time": "01:50:31",
+        "Quantity": 1
+    },
+    "MLSPF": {
+        "Open": 1.45,
+        "High": 1.5,
+        "Low": 1.45,
+        "Close": 1.5,
+        "Volume": 29200.0,
+        "Time": "01:51:58",
+        "Quantity": 5
+    },
+    "RNLSY": {
+        "Open": 4.84,
+        "High": 4.95,
+        "Low": 4.73,
+        "Close": 4.95,
+        "Volume": 256800.0,
+        "Time": "01:52:42",
+        "Quantity": 1
+    }
 }
