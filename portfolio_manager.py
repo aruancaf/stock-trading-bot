@@ -16,6 +16,7 @@ account_value = trading_constants.starting_account_value
 
 def buy_stock(ticker: yf.Ticker, quantity: int):
     global buying_power
+    # print(ticker.get_info())
     ticker_symbol = yf_ext.get_ticker_symbol(ticker)
     json_simp.read_json()
     refresh_account()
@@ -85,8 +86,11 @@ def refresh_account():
     sold_copy = dict(sold)
 
     for ticker_symbol in purchased_copy:
-        buying_power -= purchased[ticker_symbol]['Close'] * purchased[ticker_symbol]['Quantity']
-        account_value += yf_ext.get_stock_state(yf.Ticker(ticker_symbol))['Close'] - purchased[ticker_symbol]['Close']
+        current_ticker_price = yf_ext.get_stock_state(yf.Ticker(ticker_symbol))['Close']
+        purchased_ticker_price = purchased_copy[ticker_symbol]['Close']
+        purchased_ticker_quantity = purchased_copy[ticker_symbol]['Quantity']
+        account_value += current_ticker_price - purchased_ticker_price
+        buying_power -= purchased_ticker_price * purchased_ticker_quantity
 
     for ticker_symbol in sold_copy:
         temp = sold[ticker_symbol]['Close'] * abs(sold[ticker_symbol]['Quantity'])

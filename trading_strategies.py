@@ -66,9 +66,9 @@ def ema_crossover(ticker_symbol: str):
 
 
 def evaluate_purchased_stocks():
+    time.sleep(5)
     while True:
         for ticker_symbol in dict(portfolio_manager.purchased):
-            print("checking " + ticker_symbol)
             ticker = yf.Ticker(ticker_symbol)
             stock_info = yf_extender.get_stock_state(ticker)
             if stock_info['Close'] < yf_extender.calculate_ema(
