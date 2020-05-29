@@ -70,5 +70,14 @@
         "Volume": 53416.0,
         "Time": "22:54:42",
         "Quantity": 17
+    },
+    "QADB": {
+        "Open": 32.0,
+        "High": 32.0,
+        "Low": 32.0,
+        "Close": 32.0,
+        "Volume": 200.0,
+        "Time": "23:07:04",
+        "Quantity": 3
     }
 }

@@ -83,4 +83,4 @@ def evaluate_purchased_stocks():
                 time.sleep(0.2)
                 portfolio_manager.sell_stock(ticker)
                 break
-            time.sleep(0.5)
+            time.sleep(0.3)
