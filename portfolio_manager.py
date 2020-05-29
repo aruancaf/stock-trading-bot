@@ -14,19 +14,19 @@ buying_power = trading_constants.starting_account_value
 account_value = trading_constants.starting_account_value
 
 
-
-
 def buy_stock(ticker: yf.Ticker, quantity: int):
     global buying_power
     ticker_symbol = yf_ext.get_ticker_symbol(ticker)
     json_simp.read_json()
     refresh_account()
+    purchased_copy = dict(purchased)
 
-    if ticker_symbol not in purchased and buying_power >= (quantity * yf_ext.get_stock_state(ticker)['Close']):
+    if ticker_symbol not in purchased_copy and buying_power >= (quantity * yf_ext.get_stock_state(ticker)['Close']):
         stock_info = yf_ext.get_stock_state(ticker)
         stock_info['Quantity'] = quantity
         purchased[ticker_symbol] = stock_info
-        print("Buying", ticker_symbol)
+        console_output = "Buying " + ticker_symbol + "\n"
+        print(console_output, end=' ')
         buying_power -= (quantity * yf_ext.get_stock_state(ticker)['Close'])
         alerts.sayBeep(1)
 
@@ -39,7 +39,9 @@ def sell_stock(ticker: yf.Ticker):
     ticker_symbol = yf_ext.get_ticker_symbol(ticker)
     refresh_account()
 
-    if ticker_symbol not in sold:
+    sold_copy = dict(sold)
+    purchased_copy = dict(purchased)
+    if ticker_symbol not in sold_copy:
         stock_info = Counter(yf_ext.get_stock_state(ticker))
         purchase_info = Counter(purchased.pop(ticker_symbol))
         stock_info.pop('Time')
@@ -49,7 +51,7 @@ def sell_stock(ticker: yf.Ticker):
         sold[ticker_symbol] = stock_info
         buying_power += stock_info['Close'] * abs(stock_info['Quantity'])
 
-    elif ticker_symbol in purchased:
+    elif ticker_symbol in purchased_copy:
         stock_info = Counter(yf_ext.get_stock_state(ticker))
         purchase_info = Counter(purchased.pop(ticker_symbol))
         sold_info = Counter(sold.pop(ticker_symbol))
@@ -67,7 +69,8 @@ def sell_stock(ticker: yf.Ticker):
     json_simp.updated_purchased()
     json_simp.updated_sold()
     json_simp.read_json()
-    print("Selling", ticker_symbol)
+    console_output = "Selling " + ticker_symbol + "\n"
+    print(console_output, end=' ')
     alerts.sayBeep(2)
 
 
@@ -78,11 +81,14 @@ def refresh_account():
 
     buying_power = trading_constants.starting_account_value
     account_value = trading_constants.starting_account_value
+    purchased_copy = dict(purchased)
+    sold_copy = dict(sold)
 
-    for ticker_symbol in purchased:
+    for ticker_symbol in purchased_copy:
         buying_power -= purchased[ticker_symbol]['Close'] * purchased[ticker_symbol]['Quantity']
+        account_value += yf_ext.get_stock_state(yf.Ticker(ticker_symbol))['Close'] - purchased[ticker_symbol]['Close']
 
-    for ticker_symbol in sold:
+    for ticker_symbol in sold_copy:
         temp = sold[ticker_symbol]['Close'] * abs(sold[ticker_symbol]['Quantity'])
         buying_power += temp
         account_value += temp
@@ -90,5 +96,5 @@ def refresh_account():
 
 def print_account_status():
     refresh_account()
-    print("Buying Power {0}".format(buying_power))
-    print("Account Value {0}".format(account_value))
+    print("Buying Power {0}".format((buying_power*1000)/1000))
+    print("Account Value {0}".format((account_value*1000)/1000))
