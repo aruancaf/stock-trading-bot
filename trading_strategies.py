@@ -77,7 +77,7 @@ def evaluate_purchased_stocks():
                 time.sleep(0.2)
                 portfolio_manager.sell_stock(ticker)
                 break
-            elif yf_extender.get_high2current_price_change_percent(ticker) < -0.0035:
+            elif yf_extender.get_high2current_price_change_percent(ticker) < -0.0025:
                 print("Because high 2 current price change is large {0}".format(
                     yf_extender.get_high2current_price_change_percent(ticker)))
                 time.sleep(0.2)

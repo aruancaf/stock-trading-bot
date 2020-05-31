@@ -1,6 +1,11 @@
 import requests
 from bs4 import BeautifulSoup
 
+# todo
+# url = "https://finance.yahoo.com/gainers"
+# soup = BeautifulSoup(requests.get(url).text, 'html.parser')
+# assets = soup.find_all('a', attrs={"class": "Fw(600)"})
+
 headers = {
     'Referer': 'https://itunes.apple.com',
     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36'

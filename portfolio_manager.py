@@ -16,10 +16,8 @@ account_value = trading_constants.starting_account_value
 
 def buy_stock(ticker: yf.Ticker, quantity: int):
     global buying_power
-    # print(ticker.get_info())
     ticker_symbol = yf_ext.get_ticker_symbol(ticker)
     json_simp.read_json()
-    refresh_account()
     purchased_copy = dict(purchased)
 
     if ticker_symbol not in purchased_copy and buying_power >= (quantity * yf_ext.get_stock_state(ticker)['Close']):

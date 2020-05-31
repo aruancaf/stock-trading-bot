@@ -1,9 +1,11 @@
 import portfolio_manager
 import trading_strategies
+import web
 import yf_web_scraper
 from utils import multithreading, json_simplifier as json_simp
 
 portfolio_manager.refresh_account()
+multithreading.run_thread(web.init_web)
 multithreading.run_thread(trading_strategies.evaluate_purchased_stocks)
 
 while True:
