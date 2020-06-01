@@ -43,5 +43,104 @@
         "Volume": 650600.0,
         "Time": "00:22:05",
         "Quantity": 50
+    },
+    "CRWD": {
+        "Open": 83.19,
+        "High": 88.0,
+        "Low": 81.2,
+        "Close": 87.81,
+        "Volume": 13425700.0,
+        "Time": "00:32:48",
+        "Quantity": 1
+    },
+    "TBVPF": {
+        "Open": 0.428,
+        "High": 0.55,
+        "Low": 0.428,
+        "Close": 0.55,
+        "Volume": 25900.0,
+        "Time": "00:33:10",
+        "Quantity": 208
+    },
+    "PTXKY": {
+        "Open": 3.54,
+        "High": 3.8,
+        "Low": 3.34,
+        "Close": 3.8,
+        "Volume": 47600.0,
+        "Time": "00:33:44",
+        "Quantity": 54
+    },
+    "AOBC": {
+        "Open": 10.9,
+        "High": 11.84,
+        "Low": 10.82,
+        "Close": 11.82,
+        "Volume": 1548200.0,
+        "Time": "00:33:52",
+        "Quantity": 8
+    },
+    "GTBIF": {
+        "Open": 9.55,
+        "High": 10.26,
+        "Low": 9.33,
+        "Close": 10.24,
+        "Volume": 442000.0,
+        "Time": "00:34:01",
+        "Quantity": 10
+    },
+    "ARC": {
+        "Open": 0.94,
+        "High": 1.02,
+        "Low": 0.88,
+        "Close": 1.02,
+        "Volume": 89900.0,
+        "Time": "00:34:22",
+        "Quantity": 81
+    },
+    "EBAY": {
+        "Open": 44.3,
+        "High": 45.65,
+        "Low": 43.88,
+        "Close": 45.54,
+        "Volume": 18741500.0,
+        "Time": "00:35:08",
+        "Quantity": 1
+    },
+    "VNNVF": {
+        "Open": 57.52,
+        "High": 57.52,
+        "Low": 57.52,
+        "Close": 57.52,
+        "Volume": 94000.0,
+        "Time": "00:35:09",
+        "Quantity": 1
+    },
+    "AUTL": {
+        "Open": 11.36,
+        "High": 12.52,
+        "Low": 11.36,
+        "Close": 12.52,
+        "Volume": 325300.0,
+        "Time": "00:35:13",
+        "Quantity": 6
+    },
+    "CSCO": {
+        "Open": 46.04,
+        "High": 47.82,
+        "Low": 45.41,
+        "Close": 47.82,
+        "Volume": 43553600.0,
+        "Time": "00:35:20",
+        "Quantity": 1
+    },
+    "SMNUF": {
+        "Open": 0.075,
+        "High": 0.075,
+        "Low": 0.07,
+        "Close": 0.075,
+        "Volume": 81800.0,
+        "Time": "00:41:13",
+        "Quantity": 982
     }
 }

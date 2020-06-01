@@ -11,7 +11,7 @@ app = flask.Flask(__name__)
 
 def init_web():
     app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
-    app.run(host='localhost', port=5000, debug=False, use_reloader=False)
+    app.run(host='localhost', port=2000, debug=False, use_reloader=False)
     sys.stdout.flush()
 
 
