@@ -22,8 +22,9 @@ def scrape_screeners() -> []:
     yf_screener_urls = ["https://finance.yahoo.com/screener/predefined/most_actives?offset=0&count=100",
                         "https://finance.yahoo.com/screener/predefined/most_actives?count=100&offset=100",
                         "https://finance.yahoo.com/screener/predefined/day_gainers",
-                        "https://finance.yahoo.com/screener/predefined/undervalued_growth_stocks",
-                        "https://finance.yahoo.com/screener/predefined/small_cap_gainers"]
+                        "https://finance.yahoo.com/screener/predefined/small_cap_gainers",
+                        "https://finance.yahoo.com/screener/predefined/aggressive_small_caps?offset=0&count=100",
+                        "https://finance.yahoo.com/screener/predefined/day_losers?offset=0&count=100"]
 
     for url in yf_screener_urls:
         soup = BeautifulSoup(requests.get(url, headers).content, 'html.parser')

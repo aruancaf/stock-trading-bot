@@ -3,7 +3,6 @@ import threading
 
 def run_chunked_threads(most_active_stocks, method, thread_count):
     partitioned_most_active_stock = partition_array(most_active_stocks, thread_count)
-
     threads = []
 
     for partition in partitioned_most_active_stock:

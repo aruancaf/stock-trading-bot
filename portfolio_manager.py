@@ -14,11 +14,11 @@ buying_power = trading_constants.starting_account_value
 account_value = trading_constants.starting_account_value
 
 
-def buy_stock(ticker: yf.Ticker, quantity: int):
+def buy_stock(ticker_symbol: str, quantity: int):
     global buying_power
-    ticker_symbol = yf_ext.get_ticker_symbol(ticker)
     json_simp.read_json()
     purchased_copy = dict(purchased)
+    ticker = yf.Ticker(ticker_symbol)
 
     if ticker_symbol not in purchased_copy and buying_power >= (quantity * yf_ext.get_stock_state(ticker)['Close']):
         stock_info = yf_ext.get_stock_state(ticker)
@@ -33,14 +33,14 @@ def buy_stock(ticker: yf.Ticker, quantity: int):
     json_simp.read_json()
 
 
-def sell_stock(ticker: yf.Ticker):
+def sell_stock(ticker_symbol: str):
     global buying_power
-    ticker_symbol = yf_ext.get_ticker_symbol(ticker)
     refresh_account()
-
     sold_copy = dict(sold)
+    ticker = yf.Ticker(ticker_symbol)
+
     purchased_copy = dict(purchased)
-    if ticker_symbol not in sold_copy:
+    if ticker_symbol not in sold_copy and ticker_symbol != "":
         stock_info = Counter(yf_ext.get_stock_state(ticker))
         purchase_info = Counter(purchased.pop(ticker_symbol))
         stock_info.pop('Time')

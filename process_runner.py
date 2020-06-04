@@ -1,3 +1,5 @@
+#!/Users/adityaoberai/Programming/Python/StockPriceRetriever/venv/bin/python
+
 import portfolio_manager
 import trading_strategies
 import web
@@ -13,4 +15,4 @@ while True:
     most_active_stocks = yf_web_scraper.get_active_tickers()
     print(most_active_stocks)
     portfolio_manager.print_account_status()
-    multithreading.run_chunked_threads(most_active_stocks, trading_strategies.run_stock_pipelines, 40)
+    multithreading.run_chunked_threads(most_active_stocks, trading_strategies.run_stock_pipelines, 37)
