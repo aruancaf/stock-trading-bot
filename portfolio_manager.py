@@ -27,7 +27,7 @@ def buy_stock(ticker_symbol: str, quantity: int):
         console_output = "Buying " + ticker_symbol + "\n"
         print(console_output, end=' ')
         buying_power -= (quantity * yf_ext.get_stock_state(ticker)['Close'])
-        alerts.sayBeep(1)
+        alerts.say_beep(1)
 
     json_simp.updated_purchased()
     json_simp.read_json()
@@ -70,7 +70,7 @@ def sell_stock(ticker_symbol: str):
     json_simp.read_json()
     console_output = "Selling " + ticker_symbol + "\n"
     print(console_output, end=' ')
-    alerts.sayBeep(2)
+    alerts.say_beep(2)
 
 
 def refresh_account():

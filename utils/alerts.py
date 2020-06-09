@@ -1,6 +1,8 @@
 import os
+from sys import platform
 
 
-def sayBeep(n: int):
+def say_beep(n: int):
     for i in range(0, n):
-        os.system("say beep")
+        if platform == "darwin":
+            os.system("say beep")
