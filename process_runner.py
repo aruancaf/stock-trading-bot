@@ -1,4 +1,4 @@
-#!/Users/adityaoberai/Programming/Python/StockPriceRetriever/venv/bin/python
+# !/Users/adityaoberai/Programming/Python/StockPriceRetriever/venv/bin/python
 
 import portfolio_manager
 import trading_strategies
