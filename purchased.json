@@ -17,15 +17,6 @@
         "Time": "09:55:09",
         "Quantity": 31
     },
-    "BAND": {
-        "Open": 111.97,
-        "High": 112.5,
-        "Low": 107.11,
-        "Close": 108.31,
-        "Volume": 128872.0,
-        "Time": "10:13:11",
-        "Quantity": 2
-    },
     "AAIGF": {
         "Open": 8.65,
         "High": 8.97,
@@ -147,18 +138,18 @@
         "Open": 2.21,
         "High": 2.21,
         "Low": 2.04,
-        "Close": 2.095,
-        "Volume": 3634574.0,
-        "Time": "11:00:00",
-        "Quantity": 125
+        "Close": 2.09,
+        "Volume": 4299238.0,
+        "Time": "12:31:03",
+        "Quantity": 62
     },
-    "PS": {
-        "Open": 21.0,
-        "High": 21.2,
-        "Low": 19.43,
-        "Close": 20.18,
-        "Volume": 2133849.0,
-        "Time": "11:01:24",
-        "Quantity": 1
+    "NBY": {
+        "Open": 0.9181,
+        "High": 0.92,
+        "Low": 0.865,
+        "Close": 0.8879,
+        "Volume": 1299728.0,
+        "Time": "17:43:35",
+        "Quantity": 106
     }
 }

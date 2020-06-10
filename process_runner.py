@@ -1,4 +1,5 @@
 # !/Users/adityaoberai/Programming/Python/StockPriceRetriever/venv/bin/python
+# !/mnt/c/Users/aober/Documents/Programming/Python/stock-trading-bot/venv_windows/Scripts/python
 
 import portfolio_manager
 import trading_strategies
