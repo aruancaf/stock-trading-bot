@@ -5,7 +5,16 @@
         "Low": 0.0,
         "Close": 0.0,
         "Volume": 0.0,
-        "Quantity": -15,
-        "Time": "14:01:34"
+        "Quantity": -232,
+        "Time": "14:39:44"
+    },
+    "BB": {
+        "Open": 0.0,
+        "High": 0.0,
+        "Low": 0.0,
+        "Close": 0.0,
+        "Volume": 0.0,
+        "Quantity": -916,
+        "Time": "14:39:54"
     }
 }

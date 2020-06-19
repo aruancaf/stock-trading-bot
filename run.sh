@@ -1,14 +1,12 @@
 #!/usr/bin/env bash
 
-if [ "$(uname)" == "Darwin" ]; then
-    # Do something under Mac OS X platform
-    echo "Using MacOS"
-    ./venv/bin/python process_runner.py
-elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
-    # Do something under GNU/Linux platform
-    echo "Linux"
+if [ "$(uname)" == "Darwin" ] || [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+    # Do something under Unix platform
+    echo "Unix"
+    source ./venv/bin/activate
+    ./process_runner.py
 elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ] || [ "$(expr substr $(uname -s) 1 10)" == "MINGW64_NT" ]; then
-    # Do something under Windows NT platform
-    echo "Windows"
+    echo "Windows WSL"
+    source ./venv_windows/Scripts/activate
     ./venv_windows/Scripts/python process_runner.py
 fi

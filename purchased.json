@@ -7,5 +7,32 @@
         "Volume": 73680.0,
         "Time": "14:01:13",
         "Quantity": 47
+    },
+    "NHI": {
+        "Open": 62.9,
+        "High": 63.99,
+        "Low": 59.71,
+        "Close": 59.93,
+        "Volume": 1631057.0,
+        "Time": "14:06:56",
+        "Quantity": 5
+    },
+    "BAC": {
+        "Open": 25.44,
+        "High": 25.49,
+        "Low": 24.49,
+        "Close": 25.25,
+        "Volume": 116792827.0,
+        "Time": "14:41:15",
+        "Quantity": 13
+    },
+    "BB": {
+        "Open": 5.14,
+        "High": 5.16,
+        "Low": 4.95,
+        "Close": 5.06,
+        "Volume": 8186985.0,
+        "Time": "14:42:00",
+        "Quantity": 57
     }
 }
