@@ -19,12 +19,12 @@ def buy_stock(ticker_symbol: str, quantity: int):
     json_simp.read_json()
     purchased_copy = dict(purchased)
     ticker = yf.Ticker(ticker_symbol)
+    stock_info = yf_ext.get_stock_state(ticker)
 
-    if ticker_symbol not in purchased_copy and buying_power >= (quantity * yf_ext.get_stock_state(ticker)['Close']):
-        stock_info = yf_ext.get_stock_state(ticker)
+    if ticker_symbol not in purchased_copy and buying_power > (quantity * stock_info['Close']):
         stock_info['Quantity'] = quantity
         purchased[ticker_symbol] = stock_info
-        console_output = "Buying " + ticker_symbol + "\n"
+        console_output = "Buying " + ticker_symbol + " Quantity: {0}".format(stock_info['Quantity']) + "\n"
         print(console_output, end=' ')
         buying_power -= (quantity * yf_ext.get_stock_state(ticker)['Close'])
         alerts.say_beep(1)
@@ -38,11 +38,13 @@ def sell_stock(ticker_symbol: str):
     refresh_account()
     sold_copy = dict(sold)
     ticker = yf.Ticker(ticker_symbol)
-
+    stock_info = Counter(yf_ext.get_stock_state(ticker))
     purchased_copy = dict(purchased)
+    console_output = "Selling " + ticker_symbol + " Quantity: {0}".format(stock_info['Quantity']) + "\n"
+
     if ticker_symbol not in sold_copy and ticker_symbol != "":
-        stock_info = Counter(yf_ext.get_stock_state(ticker))
         purchase_info = Counter(purchased.pop(ticker_symbol))
+        console_output = "Selling " + ticker_symbol + " Quantity: {0}".format(purchase_info['Quantity']) + "\n"
         stock_info.pop('Time')
         purchase_info.pop('Time')
         stock_info.subtract(purchase_info)
@@ -51,8 +53,8 @@ def sell_stock(ticker_symbol: str):
         buying_power += stock_info['Close'] * abs(stock_info['Quantity'])
 
     elif ticker_symbol in purchased_copy:
-        stock_info = Counter(yf_ext.get_stock_state(ticker))
         purchase_info = Counter(purchased.pop(ticker_symbol))
+        console_output = "Selling " + ticker_symbol + " Quantity: {0}".format(purchase_info['Quantity']) + "\n"
         sold_info = Counter(sold.pop(ticker_symbol))
         stock_info.pop('Time')
         purchase_info.pop('Time')
@@ -68,7 +70,6 @@ def sell_stock(ticker_symbol: str):
     json_simp.updated_purchased()
     json_simp.updated_sold()
     json_simp.read_json()
-    console_output = "Selling " + ticker_symbol + "\n"
     print(console_output, end=' ')
     alerts.say_beep(2)
 

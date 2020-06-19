@@ -54,7 +54,7 @@ def ema_crossover(ticker_symbol: str):
     ticker_ema = yf_extender.calculate_ema(ticker)
     ticker_previous_ema = yf_extender.calculate_previous_ema(ticker)
 
-    if stock_info['Close'] > ticker_ema and previous_price < ticker_previous_ema:
+    if stock_info['Close'] > ticker_ema and previous_price < ticker_previous_ema and stock_info['Close'] > 3:
         print(
             ticker_symbol + " previous price ema {0} previous price {1} current price ema {2} current price {3} direction {4}".format(
                 ticker_previous_ema, previous_price, ticker_ema, stock_info['Close'],
@@ -76,10 +76,10 @@ def evaluate_purchased_stocks():
                 time.sleep(0.3)
                 portfolio_manager.sell_stock(ticker_symbol)
                 break
-            # elif yf_extender.get_direction(ticker) < 0:
-            #     print("Because direction is downward {0}".format(
-            #         yf_extender.get_direction(ticker)))
-            #     time.sleep(0.2)
-            #     portfolio_manager.sell_stock(ticker)
-            #     break
+            elif yf_extender.get_direction(ticker) < -0.001:
+                # print("Because direction is downward {0}".format(
+                #     yf_extender.get_direction(ticker)))
+                time.sleep(0.2)
+                portfolio_manager.sell_stock(ticker_symbol)
+                break
             time.sleep(0.15)

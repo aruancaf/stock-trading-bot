@@ -67,4 +67,4 @@ def get_high2current_price_change_percent(ticker: yf.Ticker) -> float:
 
 def get_direction(ticker: yf.Ticker) -> float:
     stock_history = ticker.history(period="1d", interval="1m")
-    return stock_history.iloc[len(stock_history) - 1].to_dict()['Close'] - stock_history.iloc[len(stock_history) - 2].to_dict()['Close']
+    return (stock_history.iloc[len(stock_history) - 1].to_dict()['Close'] - stock_history.iloc[len(stock_history) - 2].to_dict()['Close'])/stock_history.iloc[len(stock_history) - 2].to_dict()['Close']
