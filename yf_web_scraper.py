@@ -31,7 +31,11 @@ def scrape_screeners() -> []:
         screener_list = []
         for element in soup.find_all('a'):
             screener_list.append(element.get_text())
-        active_stocks += screener_list[screener_list.index("Heatmap View") + 1: screener_list.index("Finance")]
+        try:
+            active_stocks += screener_list[screener_list.index("Heatmap View") + 1: screener_list.index("Finance")]
+        except ValueError:
+            scrape_screeners()
+
 
     return active_stocks
 

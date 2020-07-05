@@ -77,8 +77,8 @@ def evaluate_purchased_stocks():
                 portfolio_manager.sell_stock(ticker_symbol)
                 break
             elif yf_extender.get_direction(ticker) < -0.001:
-                # print("Because direction is downward {0}".format(
-                #     yf_extender.get_direction(ticker)))
+                print("Because direction is downward {0}".format(
+                    yf_extender.get_direction(ticker)))
                 time.sleep(0.2)
                 portfolio_manager.sell_stock(ticker_symbol)
                 break

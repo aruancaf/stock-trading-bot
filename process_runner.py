@@ -7,12 +7,11 @@ import yf_web_scraper
 from utils import multithreading, json_simplifier as json_simp
 import trading_constants as const
 
-portfolio_manager.refresh_account()
+portfolio_manager.refresh_account_balance()
 multithreading.run_thread(web.init_web)
 multithreading.run_thread(trading_strategies.evaluate_purchased_stocks)
 
 while True:
-    json_simp.read_json()
     most_active_stocks = yf_web_scraper.get_active_tickers()
     print(most_active_stocks)
     portfolio_manager.print_account_status()

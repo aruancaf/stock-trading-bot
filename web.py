@@ -15,13 +15,7 @@ def init_web():
     sys.stdout.flush()
 
 
-@app.route('/purchased_portfolio', methods=['GET'])
-def purchased_web():
-    json_simp.read_json('purchased')
-    return jsonify(portfolio_manager.purchased)
+@app.route('/portfolio', methods=['GET'])
+def display_stocks_web():
+    return jsonify({"purchased": portfolio_manager.purchased, "sold": portfolio_manager.sold})
 
-
-@app.route('/sold_portfolio', methods=['GET'])
-def sold_web():
-    json_simp.read_json('sold')
-    return portfolio_manager.sold

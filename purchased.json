@@ -1,20 +1,56 @@
 {
-    "TRMD": {
-        "Open": 7.3,
-        "High": 9.49,
-        "Low": 7.21,
-        "Close": 9.49,
-        "Volume": 73680.0,
-        "Time": "14:01:13",
-        "Quantity": 47
+    "FB": {
+        "Open": 239.0,
+        "High": 240.0,
+        "Low": 232.61,
+        "Close": 233.42,
+        "Volume": 30633600.0,
+        "Time": "15:39:49",
+        "Quantity": 1
     },
-    "NHI": {
-        "Open": 62.9,
-        "High": 63.99,
-        "Low": 59.71,
-        "Close": 59.93,
-        "Volume": 1631057.0,
-        "Time": "14:06:56",
-        "Quantity": 5
+    "PYPL": {
+        "Open": 179.69,
+        "High": 179.8,
+        "Low": 176.72,
+        "Close": 177.21,
+        "Volume": 5943623.0,
+        "Time": "15:40:17",
+        "Quantity": 2
+    },
+    "PFSI": {
+        "Open": 42.46,
+        "High": 42.72,
+        "Low": 40.4,
+        "Close": 40.52,
+        "Volume": 490900.0,
+        "Time": "15:40:46",
+        "Quantity": 8
+    },
+    "STNE": {
+        "Open": 40.07,
+        "High": 40.9,
+        "Low": 39.49,
+        "Close": 40.11,
+        "Volume": 1873495.0,
+        "Time": "15:44:32",
+        "Quantity": 7
+    },
+    "ATI": {
+        "Open": 10.42,
+        "High": 10.82,
+        "Low": 9.96,
+        "Close": 10.19,
+        "Volume": 1702300.0,
+        "Time": "15:44:38",
+        "Quantity": 26
+    },
+    "NBL": {
+        "Open": 9.1,
+        "High": 9.65,
+        "Low": 9.1,
+        "Close": 9.55,
+        "Volume": 11390815.0,
+        "Time": "15:48:12",
+        "Quantity": 24
     }
 }
