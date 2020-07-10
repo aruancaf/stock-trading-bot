@@ -73,7 +73,7 @@ def evaluate_purchased_stocks():
             if stock_info['Close'] < yf_extender.calculate_ema(
                     ticker):
                 print("Because stock price dropped below EMA line, " + ticker_symbol)
-                time.sleep(0.3)
+                time.sleep(0.2)
                 portfolio_manager.sell_stock(ticker_symbol)
                 break
             elif yf_extender.get_direction(ticker) < -0.001:

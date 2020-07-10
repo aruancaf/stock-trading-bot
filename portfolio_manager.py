@@ -17,7 +17,6 @@ lock = threading.Lock()
 
 
 def buy_stock(ticker_symbol: str, quantity: int):
-    print("called")
     with lock:
         global buying_power
         json_simp.read_json()
