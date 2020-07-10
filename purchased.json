@@ -1,0 +1,47 @@
+{
+    "SLFPF": {
+        "Open": 3.0,
+        "High": 3.3174,
+        "Low": 3.0,
+        "Close": 3.3174,
+        "Volume": 46979.0,
+        "Time": "11:44:34",
+        "Quantity": 117
+    },
+    "ZNGA": {
+        "Open": 10.43,
+        "High": 10.48,
+        "Low": 10.24,
+        "Close": 10.31,
+        "Volume": 8823707.0,
+        "Time": "11:54:01",
+        "Quantity": 25
+    },
+    "SMAR": {
+        "Open": 52.64,
+        "High": 52.84,
+        "Low": 50.53,
+        "Close": 50.73,
+        "Volume": 1060278.0,
+        "Time": "11:56:05",
+        "Quantity": 5
+    },
+    "AZUL": {
+        "Open": 11.6,
+        "High": 12.19,
+        "Low": 11.48,
+        "Close": 12.18,
+        "Volume": 1596958.0,
+        "Time": "12:01:22",
+        "Quantity": 20
+    },
+    "ING": {
+        "Open": 6.96,
+        "High": 7.25,
+        "Low": 6.97,
+        "Close": 7.22,
+        "Volume": 4349050.0,
+        "Time": "12:02:53",
+        "Quantity": 29
+    }
+}

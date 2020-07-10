@@ -1,47 +1,107 @@
+import threading
 from collections import Counter
 from datetime import datetime
 
 import yfinance as yf
 
-import portfolio_manager
 import trading_constants
-import yf_extender
-from utils import json_simplifier
+import utils.json_simplifier as json_simp
+import yf_extender as yf_ext
+from utils import alerts
 
-stocks = {"Purchased": {}, "Sold": {}}
-
-
-def get_position_polarity() -> float:
-    position_polarity = 0
-    portfolio_manager.stocks = json_simplifier.readJson('stock_portfolio.json')
-    ticker_changes = []
-    for i in stocks['Purchased']:
-        polarity_stock = yf_extender.get_stock_info(yf.Ticker(i))['Close'] - stocks['Purchased'][i]['Close']
-        ticker_changes.append("{0} {1}".format(i, polarity_stock))
-        position_polarity += polarity_stock
-
-    print("Position Polarity : {0}".format(position_polarity))
-    print(ticker_changes)
-    return position_polarity
+purchased = {}
+sold = {}
+buying_power = trading_constants.starting_account_value
+account_value = trading_constants.starting_account_value
+lock = threading.Lock()
 
 
-def buy_stock(ticker: yf.Ticker):
-    if yf_extender.get_ticker_symbol(ticker) not in trading_constants.blacklist:
-        json_simplifier.addYFTickerToJson('stock_portfolio.json', ticker, 'Purchased')
-        print("Buying {0}".format(ticker.get_info()['symbol']))
+def buy_stock(ticker_symbol: str, quantity: int):
+    with lock:
+        global buying_power
+        json_simp.read_json()
+        purchased_copy = dict(purchased)
+        ticker = yf.Ticker(ticker_symbol)
+        stock_info = yf_ext.get_stock_state(ticker)
+
+        if ticker_symbol not in purchased_copy and buying_power > (quantity * stock_info['Close']):
+            stock_info['Quantity'] = quantity
+            purchased[ticker_symbol] = stock_info
+            console_output = "Buying " + ticker_symbol + " Quantity: {0}".format(stock_info['Quantity']) + "\n"
+            print(console_output, end=' ')
+            buying_power -= (quantity * yf_ext.get_stock_state(ticker)['Close'])
+            alerts.say_beep(1)
+
+        json_simp.updated_purchased()
+        json_simp.read_json()
 
 
-def sell_stock(ticker: yf.Ticker):
-    stock_info = yf_extender.get_stock_info(ticker)
+def sell_stock(ticker_symbol: str):
+    global buying_power
+    refresh_account_balance()
+    sold_copy = dict(sold)
+    ticker = yf.Ticker(ticker_symbol)
+    stock_info = Counter(yf_ext.get_stock_state(ticker))
+    purchased_copy = dict(purchased)
+    console_output = "Selling " + ticker_symbol + " Quantity: {0}".format(stock_info['Quantity']) + "\n"
 
-    purchased_stock_info = json_simplifier.delFromJsonReturnDict("stock_portfolio.json", ticker,
-                                                                 'Purchased')
+    if ticker_symbol not in sold_copy and ticker_symbol != "":
+        purchase_info = Counter(purchased.pop(ticker_symbol))
+        console_output = "Selling " + ticker_symbol + " Quantity: {0}".format(purchase_info['Quantity']) + "\n"
+        stock_info.pop('Time')
+        purchase_info.pop('Time')
+        stock_info.subtract(purchase_info)
+        stock_info['Time'] = datetime.now().strftime("%H:%M:%S")
+        sold[ticker_symbol] = stock_info
+        buying_power += stock_info['Close'] * abs(stock_info['Quantity'])
 
-    del purchased_stock_info['Time']
-    stock_price_counter = Counter(stock_info)
-    purchased_stock_counter = Counter(purchased_stock_info)
-    stock_price_counter.subtract(purchased_stock_counter)
-    stock_price_counter['Time'] = datetime.now().strftime("%H:%M:%S")
-    json_simplifier.addDictToJson("stock_portfolio.json", ticker, stock_price_counter,
-                                  'Sold')
-    print("Selling {0}".format(ticker.get_info()['symbol']))
+    elif ticker_symbol in purchased_copy:
+        purchase_info = Counter(purchased.pop(ticker_symbol))
+        console_output = "Selling " + ticker_symbol + " Quantity: {0}".format(purchase_info['Quantity']) + "\n"
+        sold_info = Counter(sold.pop(ticker_symbol))
+        stock_info.pop('Time')
+        purchase_info.pop('Time')
+        sold_info.pop('Time')
+        stock_info.subtract(purchase_info)
+
+        for i in stock_info and sold_info:
+            stock_info[i] = stock_info[i] + sold_info[i]
+        stock_info['Time'] = datetime.now().strftime("%H:%M:%S")
+        sold[ticker_symbol] = stock_info
+        buying_power += stock_info['Close'] * abs(stock_info['Quantity'])
+
+    json_simp.updated_purchased()
+    json_simp.updated_sold()
+    json_simp.read_json()
+    print(console_output, end=' ')
+    alerts.say_beep(2)
+
+
+def refresh_account_balance():
+    with lock:
+        global buying_power
+        global account_value
+        json_simp.read_json()
+
+        buying_power = trading_constants.starting_account_value
+        account_value = trading_constants.starting_account_value
+        purchased_copy = dict(purchased)
+        sold_copy = dict(sold)
+
+        for ticker_symbol in purchased_copy:
+            current_ticker_price = yf_ext.get_stock_state(yf.Ticker(ticker_symbol))['Close']
+            purchased_ticker_price = purchased_copy[ticker_symbol]['Close']
+            purchased_ticker_quantity = purchased_copy[ticker_symbol]['Quantity']
+            account_value += current_ticker_price - purchased_ticker_price
+            buying_power -= purchased_ticker_price * purchased_ticker_quantity
+
+        for ticker_symbol in sold_copy:
+            temp = sold[ticker_symbol]['Close'] * abs(sold[ticker_symbol]['Quantity'])
+            buying_power += temp
+            account_value += temp
+
+
+def print_account_status():
+    refresh_account_balance()
+    print("Buying Power {0}".format((buying_power*1000)/1000))
+    print("Account Value {0}".format((account_value*1000)/1000))

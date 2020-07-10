@@ -1,10 +1,18 @@
+#! ./venv/bin/python3.8
+
 import portfolio_manager
 import trading_strategies
+import web
 import yf_web_scraper
-from utils import multithreading
+from utils import multithreading, json_simplifier as json_simp
+import trading_constants as const
+
+portfolio_manager.refresh_account_balance()
+multithreading.run_thread(web.init_web)
+multithreading.run_thread(trading_strategies.evaluate_purchased_stocks)
 
 while True:
     most_active_stocks = yf_web_scraper.get_active_tickers()
-    portfolio_manager.get_position_polarity()
     print(most_active_stocks)
-    multithreading.run_chunked_threads(most_active_stocks, trading_strategies.run_stock_pipelines, 35)
+    portfolio_manager.print_account_status()
+    multithreading.run_chunked_threads(most_active_stocks, trading_strategies.run_stock_pipelines, const.trading_strategy_thread_count)
