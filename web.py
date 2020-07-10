@@ -4,7 +4,6 @@ import flask
 from flask import jsonify
 
 import portfolio_manager
-from utils import json_simplifier as json_simp
 
 app = flask.Flask(__name__)
 

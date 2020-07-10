@@ -38,46 +38,44 @@ def buy_stock(ticker_symbol: str, quantity: int):
 
 
 def sell_stock(ticker_symbol: str):
-    print("called")
-    with lock:
-        global buying_power
-        refresh_account_balance()
-        sold_copy = dict(sold)
-        ticker = yf.Ticker(ticker_symbol)
-        stock_info = Counter(yf_ext.get_stock_state(ticker))
-        purchased_copy = dict(purchased)
-        console_output = "Selling " + ticker_symbol + " Quantity: {0}".format(stock_info['Quantity']) + "\n"
+    global buying_power
+    refresh_account_balance()
+    sold_copy = dict(sold)
+    ticker = yf.Ticker(ticker_symbol)
+    stock_info = Counter(yf_ext.get_stock_state(ticker))
+    purchased_copy = dict(purchased)
+    console_output = "Selling " + ticker_symbol + " Quantity: {0}".format(stock_info['Quantity']) + "\n"
 
-        if ticker_symbol not in sold_copy and ticker_symbol != "":
-            purchase_info = Counter(purchased.pop(ticker_symbol))
-            console_output = "Selling " + ticker_symbol + " Quantity: {0}".format(purchase_info['Quantity']) + "\n"
-            stock_info.pop('Time')
-            purchase_info.pop('Time')
-            stock_info.subtract(purchase_info)
-            stock_info['Time'] = datetime.now().strftime("%H:%M:%S")
-            sold[ticker_symbol] = stock_info
-            buying_power += stock_info['Close'] * abs(stock_info['Quantity'])
+    if ticker_symbol not in sold_copy and ticker_symbol != "":
+        purchase_info = Counter(purchased.pop(ticker_symbol))
+        console_output = "Selling " + ticker_symbol + " Quantity: {0}".format(purchase_info['Quantity']) + "\n"
+        stock_info.pop('Time')
+        purchase_info.pop('Time')
+        stock_info.subtract(purchase_info)
+        stock_info['Time'] = datetime.now().strftime("%H:%M:%S")
+        sold[ticker_symbol] = stock_info
+        buying_power += stock_info['Close'] * abs(stock_info['Quantity'])
 
-        elif ticker_symbol in purchased_copy:
-            purchase_info = Counter(purchased.pop(ticker_symbol))
-            console_output = "Selling " + ticker_symbol + " Quantity: {0}".format(purchase_info['Quantity']) + "\n"
-            sold_info = Counter(sold.pop(ticker_symbol))
-            stock_info.pop('Time')
-            purchase_info.pop('Time')
-            sold_info.pop('Time')
-            stock_info.subtract(purchase_info)
+    elif ticker_symbol in purchased_copy:
+        purchase_info = Counter(purchased.pop(ticker_symbol))
+        console_output = "Selling " + ticker_symbol + " Quantity: {0}".format(purchase_info['Quantity']) + "\n"
+        sold_info = Counter(sold.pop(ticker_symbol))
+        stock_info.pop('Time')
+        purchase_info.pop('Time')
+        sold_info.pop('Time')
+        stock_info.subtract(purchase_info)
 
-            for i in stock_info and sold_info:
-                stock_info[i] = stock_info[i] + sold_info[i]
-            stock_info['Time'] = datetime.now().strftime("%H:%M:%S")
-            sold[ticker_symbol] = stock_info
-            buying_power += stock_info['Close'] * abs(stock_info['Quantity'])
+        for i in stock_info and sold_info:
+            stock_info[i] = stock_info[i] + sold_info[i]
+        stock_info['Time'] = datetime.now().strftime("%H:%M:%S")
+        sold[ticker_symbol] = stock_info
+        buying_power += stock_info['Close'] * abs(stock_info['Quantity'])
 
-        json_simp.updated_purchased()
-        json_simp.updated_sold()
-        json_simp.read_json()
-        print(console_output, end=' ')
-        alerts.say_beep(2)
+    json_simp.updated_purchased()
+    json_simp.updated_sold()
+    json_simp.read_json()
+    print(console_output, end=' ')
+    alerts.say_beep(2)
 
 
 def refresh_account_balance():
