@@ -9,7 +9,6 @@ import trading_constants as const
 
 portfolio_manager.refresh_account_balance()
 multithreading.run_thread(web.init_web)
-multithreading.run_thread(trading_strategies.evaluate_purchased_stocks)
 
 while True:
     most_active_stocks = yf_web_scraper.get_active_tickers()

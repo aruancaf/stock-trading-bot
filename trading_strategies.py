@@ -7,9 +7,16 @@ import yfinance as yf
 import portfolio_manager
 import trading_constants
 import yf_extender
+from utils import multithreading
+
+first_run = True
 
 
 def run_stock_pipelines(stock_database: [str]):
+    global first_run
+    if first_run is True:
+        multithreading.run_thread(evaluate_purchased_stocks)
+        first_run = False
     for ticker_symbol in stock_database:
         if ticker_symbol not in trading_constants.blacklist:
             try:
@@ -67,11 +74,15 @@ def ema_crossover(ticker_symbol: str):
 def evaluate_purchased_stocks():
     time.sleep(5)
     while True:
-        for ticker_symbol in dict(portfolio_manager.purchased):
+        purchased_copy = dict(portfolio_manager.purchased)
+        for ticker_symbol in purchased_copy:
             ticker = yf.Ticker(ticker_symbol)
             stock_info = yf_extender.get_stock_state(ticker)
-            if stock_info['Close'] < yf_extender.calculate_ema(
-                    ticker):
+            price_change_since_purchase = stock_info['Close'] - purchased_copy[ticker_symbol]['Close']
+            print("Checking " + ticker_symbol + " | Direction: {0} | Price Change: {1} | Gains/Losses: {2}".format(
+                yf_extender.get_direction(ticker), price_change_since_purchase,
+                price_change_since_purchase * purchased_copy[ticker_symbol]['Quantity']))
+            if stock_info['Close'] < yf_extender.calculate_ema(ticker):
                 print("Because stock price dropped below EMA line, " + ticker_symbol)
                 time.sleep(0.2)
                 portfolio_manager.sell_stock(ticker_symbol)
