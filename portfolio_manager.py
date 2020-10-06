@@ -9,6 +9,7 @@ import trading_constants
 import utils.json_simplifier as json_simp
 import yf_extender as yf_ext
 from utils import alerts
+import API_KEYS
 
 
 # Alpaca Dashboard: https://app.alpaca.markets/paper/dashboard/overview
@@ -16,7 +17,7 @@ from utils import alerts
 
 def initializeApAccount():
     global api
-    api = tradeapi.REST('PKA1H9SSMRIQD2CNJ8IM', 'jZqhF5dnlXIojkDxWeXa9GW3hZu0m606gcsDHqh3',
+    api = tradeapi.REST(API_KEYS.TRADE_API_KEY_ID, API_KEYS.TRADE_API_SECRET_KEY,
                         base_url="https://paper-api.alpaca.markets")
 
 
