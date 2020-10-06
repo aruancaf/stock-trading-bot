@@ -7,7 +7,6 @@ import yfinance as yf
 import portfolio_manager
 import trading_constants
 import yf_extender
-from utils import multithreading
 
 first_run = True
 

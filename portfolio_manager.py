@@ -2,12 +2,23 @@ import threading
 from collections import Counter
 from datetime import datetime
 
+import alpaca_trade_api as tradeapi
 import yfinance as yf
 
 import trading_constants
 import utils.json_simplifier as json_simp
 import yf_extender as yf_ext
 from utils import alerts
+
+
+# Alpaca Dashboard: https://app.alpaca.markets/paper/dashboard/overview
+
+
+def initializeApAccount():
+    global api
+    api = tradeapi.REST('PKA1H9SSMRIQD2CNJ8IM', 'jZqhF5dnlXIojkDxWeXa9GW3hZu0m606gcsDHqh3',
+                        base_url="https://paper-api.alpaca.markets")
+
 
 purchased = {}
 sold = {}
@@ -17,6 +28,13 @@ lock = threading.Lock()
 
 
 def buy_stock(ticker_symbol: str, quantity: int):
+    api.submit_order(
+        symbol=ticker_symbol,
+        qty=quantity,
+        side='buy',
+        type='market',
+        time_in_force='day'
+    )
     with lock:
         global buying_power
         json_simp.read_json()
@@ -37,6 +55,7 @@ def buy_stock(ticker_symbol: str, quantity: int):
 
 
 def sell_stock(ticker_symbol: str):
+    api.close_position(ticker_symbol)
     global buying_power
     refresh_account_balance()
     sold_copy = dict(sold)
@@ -103,5 +122,5 @@ def refresh_account_balance():
 
 def print_account_status():
     refresh_account_balance()
-    print("Buying Power {0}".format((buying_power*1000)/1000))
-    print("Account Value {0}".format((account_value*1000)/1000))
+    print("Buying Power {0}".format((buying_power * 1000) / 1000))
+    print("Account Value {0}".format((account_value * 1000) / 1000))

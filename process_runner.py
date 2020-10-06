@@ -8,6 +8,7 @@ from utils import multithreading
 import trading_constants as const
 
 first_run = True
+portfolio_manager.initializeApAccount()
 portfolio_manager.refresh_account_balance()
 multithreading.run_thread(web.init_web)
 
