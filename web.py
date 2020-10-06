@@ -5,6 +5,7 @@ from flask import jsonify
 
 import portfolio_manager
 
+# Go to http://localhost:5000/portfolio to see active stock portfolio.
 app = flask.Flask(__name__)
 
 
