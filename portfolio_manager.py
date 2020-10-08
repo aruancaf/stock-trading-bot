@@ -29,13 +29,6 @@ lock = threading.Lock()
 
 
 def buy_stock(ticker_symbol: str, quantity: int):
-    api.submit_order(
-        symbol=ticker_symbol,
-        qty=quantity,
-        side='buy',
-        type='market',
-        time_in_force='day'
-    )
     with lock:
         global buying_power
         json_simp.read_json()
@@ -44,6 +37,13 @@ def buy_stock(ticker_symbol: str, quantity: int):
         stock_info = yf_ext.get_stock_state(ticker)
 
         if ticker_symbol not in purchased_copy and buying_power > (quantity * stock_info['Close']):
+            api.submit_order(
+                symbol=ticker_symbol,
+                qty=quantity,
+                side='buy',
+                type='market',
+                time_in_force='day'
+            )
             stock_info['Quantity'] = quantity
             purchased[ticker_symbol] = stock_info
             console_output = "Buying " + ticker_symbol + " Quantity: {0}".format(stock_info['Quantity']) + "\n"
