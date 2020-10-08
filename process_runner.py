@@ -13,7 +13,7 @@ portfolio_manager.refresh_account_balance()
 multithreading.run_thread(web.init_web)
 
 while True:
-    most_active_stocks = yf_web_scraper.get_active_tickers()
+    most_active_stocks = const.whitelist + yf_web_scraper.get_active_tickers()
     print(most_active_stocks)
     portfolio_manager.print_account_status()
     if first_run is True:
