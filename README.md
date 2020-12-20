@@ -1,2 +1,8 @@
-# stock-trading-bot-v2
-# stock-trading-bot-v2
+TODO:
+
+Scrape active stocks
+
+Check active and purchased stocks simultaneously
+
+Buy or Sell Stocks
+
