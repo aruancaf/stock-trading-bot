@@ -6,3 +6,5 @@ account  = api.get_account()
 api.list_positions()
 
 print(account.status)
+
+api.polygon.news('AAPL')
