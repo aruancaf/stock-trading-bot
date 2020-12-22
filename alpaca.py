@@ -9,17 +9,29 @@ class Alpaca:
         self.api.list_positions()
         print("Account Status: ", account.status)
 
-    def sell_all_positions(self):
-        orders = self.alpaca.list_orders(status="open")
-        for order in orders:
-           self.alpaca.cancel_order(order.id)
-        positions = self.alpaca.list_positions()
+    def sell_position(self, ticker_symbol: str):
+        positions = self.api.list_positions()
+        position_sell = None
         for position in positions:
-            self.alpaca.api.close_position(position)
+            if position.symbol == ticker_symbol:
+                position_sell = position
+                self.api.close_position(position_sell)
+                return
+
+    def sell_all_positions(self):
+        orders = self.api.list_orders(status="open")
+        for order in orders:
+           self.api.cancel_order(order.id)
+        positions = self.api.list_positions()
+        for position in positions:
+            self.api.close_position(position)
     
     def get_positions(self):
-        positions = self.alpaca.list_positions()
+        positions = self.api.list_positions()
         positions_tickers[]
         for position in positions:
             positions_tickers += position.symbol
         return positions_tickers
+
+    def create_order(self, ticker_symbol: str, quantity: int):
+        api.submit_order(symbol=ticker_symbol, qty=quantity, side='buy', type='market', time_in_force='day')
