@@ -7,14 +7,17 @@ import calculation
 def get_historical_data(ticker_symbol: str, time_period: str, time_interval: str) -> yf.Ticker:
     return yf.Ticker(ticker_symbol).history(period=time_period, interval=time_interval)
 
+#todo: check all is functional
 def get_current_stock_data(ticker_symbol: str) -> {}:
     historical_stock_data = get_historical_data(ticker_symbol, '3d', '2m')
     stock_data = historical_stock_data.iloc[0].to_dict()
+    
     del stock_data['Dividends']
     del stock_data['Stock Splits']
 
     stock_data['SMA'] = calculation.calculate_sma(historical_stock_data)[0]
-    stock_data['PREV_SMA'] = calculation.calculate_sma(historical_stock_data)[1]
+    stock_data['PREVSMA'] = calculation.calculate_sma(historical_stock_data)[1]
     stock_data['EMA'] = calculation.calculate_ema(historical_stock_data)
+    stock_data['PREVPRICE'] = historical_stock_data.iloc[2].to_dict()['Close']
 
     return stock_data
