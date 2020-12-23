@@ -6,27 +6,26 @@ import constants as const
 import alpaca as alp
 import stock_analysis as sa
 import stock_data_gatherer as sdg
+import util
 
 alpaca = alp.Alpaca()
 
-time = datetime.now().strftime("%H:%M")
-active_positions_to_check = {'AAPL':1000, 'TSLA':1000} # key is stock ticker, value is stock purchase price 
+current_time = datetime.now().strftime("%H:%M")
+active_positions_to_check = {} # key is stock ticker, value is stock purchase price 
 #todo: make this auto update
 
-def stock_analyzer():
-    while True:
-        active_stocks = scraper.active_stocks()
+def stock_analyzer(stocks):
+    for stock_ticker in stocks:
         stock_score = 0
-        for stock_ticker in active_stocks:
-            print("Analyzing", stock_ticker)
-            stock_score += sa.moving_average_checker(stock_ticker)
-            if stock_score > 0.7:
-                alpaca.create_order(stock_ticker, 1)
-                active_positions_to_check[stock_ticker] = sdg.get_current_stock_data(stock_ticker)['Close']
+        print("Analyzing", stock_ticker)
+        stock_score += sa.moving_average_checker(stock_ticker)
+        if stock_score >= 0.3:
+            alpaca.create_order(stock_ticker, 1) #todo: calculate order amount
+            active_positions_to_check[stock_ticker] = sdg.get_current_stock_data(stock_ticker)['Close']
 
 def stock_position_analyzer():
     for position in active_positions_to_check.keys():
-        threading.Thread(check_perform_sell(position, active_positions_to_check[position]))
+        threading.Thread(target=check_perform_sell, args=(position, active_positions_to_check[position])).start()
     active_positions_to_check.clear()
 
 
@@ -36,15 +35,16 @@ def check_perform_sell(stock_ticker, purchase_price):
     if sa.moving_average_checker(stock_ticker) < 0 or purchase_price > (sdg.get_current_stock_data(stock_ticker)['Close'] - const.MAX_STOP_LOSS): #fix max stop loss based on quantity
         alpaca.sell_position(stock_ticker)
 
-runOnce = True
-# time = "12:01"
+# current_time = "12:01"
 while True:
-    if time > const.STOCK_MARKET_OPEN_TIME and time < const.STOCK_MARKET_CLOSE_TIME:
+    if current_time > const.STOCK_MARKET_OPEN_TIME and current_time < const.STOCK_MARKET_CLOSE_TIME:
         print("Market Open")
-        stock_position_analyzer() # todo: arent running simulataneously
-        if runOnce:
-            threading.Thread(stock_analyzer())
-            runOnce = False
+        stock_position_analyzer()
+        active_stocks = scraper.active_stocks()
+        partitioned_stocks = util.partition_array(active_stocks, const.STOCK_SCANNER_PARTITION_COUNT)
+        for partition in partitioned_stocks:
+            threading.Thread(target=stock_analyzer, args=[partition]).start()
+
     else:
         print("Market Close")
         alpaca.sell_all_positions()
