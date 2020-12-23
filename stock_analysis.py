@@ -8,3 +8,6 @@ def moving_average_checker(ticker_symbol) -> int:
    elif stock_status['Close'] < stock_status['SMA'] and stock_status['PREVPRICE'] > stock_status['PREVSMA']:
        return -0.3
    return 0
+
+def calculate_price_change(final_price, original_price):
+    return (final_price - original_price)/original_price

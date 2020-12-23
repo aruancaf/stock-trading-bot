@@ -12,7 +12,6 @@ alpaca = alp.Alpaca()
 
 current_time = datetime.now().strftime("%H:%M")
 active_positions_to_check = {} # key is stock ticker, value is stock purchase price 
-#todo: make this auto update
 
 def stock_analyzer(stocks):
     for stock_ticker in stocks:
@@ -32,10 +31,9 @@ def stock_position_analyzer():
 
 def check_perform_sell(stock_ticker, purchase_price):
     print("Checking", stock_ticker, "Purchase Price", purchase_price)
-    if sa.moving_average_checker(stock_ticker) < 0 or purchase_price > (sdg.get_current_stock_data(stock_ticker)['Close'] - const.MAX_STOP_LOSS): #fix max stop loss based on quantity
+    if sa.moving_average_checker(stock_ticker) < 0 or sa.calculate_price_change(sdg.get_current_stock_data(stock_ticker)['Close'], active_positions_to_check[stock_ticker]) <= -const.MAX_STOP_LOSS_PERCENT:
         alpaca.sell_position(stock_ticker)
 
-# current_time = "12:01"
 while True:
     if current_time > const.STOCK_MARKET_OPEN_TIME and current_time < const.STOCK_MARKET_CLOSE_TIME:
         print("Market Open")
