@@ -9,5 +9,3 @@ def moving_average_checker(ticker_symbol) -> int:
        return -0.3
    return 0
 
-def calculate_price_change(final_price, original_price):
-    return (final_price - original_price)/original_price

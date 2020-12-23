@@ -22,13 +22,16 @@ class Alpaca:
             self.api.close_position(position.symbol)
         print("Closed all positions")
 
-    def get_positions(self):
+    def get_positions_tickers(self):
         positions = self.api.list_positions()
         positions_tickers = []
         for position in positions:
-            print(position)
             positions_tickers.append(position.symbol)
         return positions_tickers
+
+    def get_positions(self):
+        positions = self.api.list_positions()
+        return positions
 
     def create_order(self, ticker_symbol: str, quantity: int):
         self.api.submit_order(symbol=ticker_symbol, qty=quantity, side='buy', type='market', time_in_force='day')
