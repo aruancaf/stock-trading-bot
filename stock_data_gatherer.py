@@ -21,3 +21,7 @@ def get_current_stock_data(ticker_symbol: str) -> {}:
     stock_data['PREVPRICE'] = historical_stock_data.iloc[2].to_dict()['Close']
 
     return stock_data
+
+
+def get_stock_company_name(ticker_symbol:str):
+    return yf.Ticker(ticker_symbol).info['shortName']

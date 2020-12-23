@@ -1,34 +1,15 @@
-import stock_analysis
-import scraper
-import stock_data_gatherer
-import math
+import news_classifier
+import news
+import stock_data_gatherer as sdg
 
-stocks = scraper.active_stocks()
+ticker = "AAPL"
 
-print(len(stocks))
+b = news.NewsGetter()
 
-x = 5 # number of partitions
+a = b.get_news(ticker + " " + sdg.get_stock_company_name(ticker))
 
-number_of_stocks = len(stocks)
-
-
-stocks_per_partition = math.floor(number_of_stocks/x)
-
-
-print("stocks per partition", stocks_per_partition)
-
-chunked_stocks = []
-
-for i in range(x):
-    print(stocks[0:stocks_per_partition])
-    chunked_stocks.append(stocks[0:number_of_stocks])
-    del stocks[0:stocks_per_partition]
-    
-for x in chunked_stocks:
-    print(x)
+for i in a:
+    print(i)
+    news_classifier.sentiment_analyzer(i)
     print("\n\n\n\n")
-
-
-
-
 

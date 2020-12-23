@@ -4,6 +4,7 @@ import time
 from datetime import datetime
 import constants as const
 import alpaca as alp
+import news
 import stock_analysis as sa
 import stock_data_gatherer as sdg
 import util
@@ -41,7 +42,7 @@ def check_perform_sell(stock_ticker, purchase_price):
 if __name__ == "__main__":
 
     #Initializing important stuff
-
+    news = news.NewsGetter()
     alpaca = alp.Alpaca()
     active_positions_to_check = {} # key is stock ticker, value is stock purchase price 
     all_active_positions = {} # key is stock ticker, value is stock purchase price 
