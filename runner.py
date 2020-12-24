@@ -9,21 +9,23 @@ import stock_analysis as sa
 import stock_data_gatherer as sdg
 import util
 import news_classifier as nc
+import requests
 
 def stock_analyzer(stocks):
     for stock_ticker in stocks:
-        if stock_ticker not in all_active_positions.keys():
-            try:
-                stock_score = 0
-                print("Analyzing", stock_ticker)
-                stock_score += sa.moving_average_checker(stock_ticker)
-                stock_score += nc.sentiment_analyzer(stock_ticker)
-                if stock_score >= 0.3:
-                    alpaca.create_order(stock_ticker, 1) #todo: calculate order amount
-                    active_positions_to_check[stock_ticker] = sdg.get_current_stock_data(stock_ticker)['Close']
-                    all_active_positions[stock_ticker] = sdg.get_current_stock_data(stock_ticker)['Close']
-            except IndexError:
-                pass
+        try:
+            stock_score = 0
+            print("Analyzing", stock_ticker)
+            stock_score += sa.moving_average_checker(stock_ticker)
+            stock_score += nc.sentiment_analyzer(stock_ticker)
+            if stock_score >= 0.3 and stock_ticker not in all_active_positions.keys():
+                alpaca.create_order(stock_ticker, 1) #todo: calculate order amount
+                active_positions_to_check[stock_ticker] = sdg.get_current_stock_data(stock_ticker)['Close']
+                all_active_positions[stock_ticker] = sdg.get_current_stock_data(stock_ticker)['Close']
+        except IndexError:
+            pass
+        except (requests.exceptions.HTTPError, alpaca.api.rest.APIError):
+            pass
 def stock_position_analyzer():
     while True:
         for position in active_positions_to_check.keys():
@@ -40,6 +42,7 @@ def check_perform_sell(stock_ticker, purchase_price):
         if sa.moving_average_checker(stock_ticker) < 0 or price_change_percent <= -const.MAX_STOP_LOSS_PERCENT:
             alpaca.sell_position(stock_ticker)
             del all_active_positions[stock_ticker]
+            break
 
 
 if __name__ == "__main__":
@@ -50,8 +53,9 @@ if __name__ == "__main__":
     active_positions_to_check = {} # key is stock ticker, value is stock purchase price 
     all_active_positions = {} # key is stock ticker, value is stock purchase price 
     positions = alpaca.get_positions()
-    for position in positions:
-        active_positions_to_check[position.symbol] = float(position.cost_basis)
+    for position in positions: #todo also add orders
+        active_positions_to_check[position.symbol] = float(position.cost_basis) #cost basis not working well
+                                                                                # rescanning of stocks is breaking system
 
     all_active_positions = active_positions_to_check.copy()
     print("Currently Purchased:", active_positions_to_check)
@@ -61,7 +65,6 @@ if __name__ == "__main__":
     
     while True:
         current_time = datetime.now().strftime("%H:%M")
-        current_time = "12:01"
         if current_time > const.STOCK_MARKET_OPEN_TIME and current_time < const.STOCK_MARKET_CLOSE_TIME:
             if first_time_run:
                 threading.Thread(target=stock_position_analyzer).start()

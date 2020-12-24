@@ -1,5 +1,8 @@
 import matplotlib.pyplot as plt
->>> plt.scatter([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [131.5800018310547, 131.58999633789062, 131.6199951171875, 131.6199951171875, 131.35000610351562, 131.30499267578125, 131.0998992919922, 131.110107421875, 131.11000061035156, 130.9600067138672])
-<matplotlib.collections.PathCollection object at 0x7f11e6d2aca0>
->>> plt.show()
+import stock_data_gatherer as sdg
+stock_prices = []
+for i in range(-5, 0):
+    stock_prices.append(sdg.get_historical_data("AAPL", "1d", "1m").iloc[-i].to_dict()['Close'])
+plt.scatter([0, 1, 2, 3, 4], stock_prices)
+plt.show()
 
