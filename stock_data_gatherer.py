@@ -1,5 +1,5 @@
 import yfinance as yf
-import calculation
+import util
 
 # @param ticker_symbol - str
 # @param time_period - Valid Periods: 1d, 5d, 1mo,3mo,6mo,1y,2y,5y,10y,ytd,maxi
@@ -10,53 +10,27 @@ def get_historical_data(ticker_symbol: str, time_period: str, time_interval: str
 #todo: check all is functional
 def get_current_stock_data(ticker_symbol: str) -> {}:
     historical_stock_data = get_historical_data(ticker_symbol, '3d', '2m')
-    stock_data = historical_stock_data.iloc[0].to_dict()
+    stock_data = historical_stock_data.iloc[-1].to_dict()
     
     del stock_data['Dividends']
     del stock_data['Stock Splits']
 
-    stock_data['SMA'] = calculation.calculate_sma(historical_stock_data)[0]
-    stock_data['PREVSMA'] = calculation.calculate_sma(historical_stock_data)[1]
-    stock_data['EMA'] = calculation.calculate_ema(historical_stock_data)
-    stock_data['PREVPRICE'] = historical_stock_data.iloc[2].to_dict()['Close']
+    stock_data['SMA'] = util.calculate_sma(historical_stock_data)[0]#method broken because of history access
+    stock_data['PREVSMA'] = util.calculate_sma(historical_stock_data)[1]
+    stock_data['EMA'] = util.calculate_ema(historical_stock_data)
+    stock_data['PREVPRICE'] = historical_stock_data.iloc[-2].to_dict()['Close']#might need to change, only checks price 2 minutes ago
 
     return stock_data
 
-def get_volume_slope(ticker_symbol:str) -> {}
-    n = 5
-    
-    
-    historical_stock_data = get_historical_data(ticker_symbol, '3d', '2m')
-    stock_data = historical_stock_data.iloc[0].to_dict()
-    
-    del stock_data['Dividends']
-    del stock_data['Stock Splits']
-
-    stock_data['SMA'] = calculation.calculate_sma(historical_stock_data)[0]
-    stock_data['PREVSMA'] = calculation.calculate_sma(historical_stock_data)[1]
-    stock_data['EMA'] = calculation.calculate_ema(historical_stock_data)
-    stock_data['PREVPRICE'] = historical_stock_data.iloc[2].to_dict()['Close']
-
-    return stock_data
-
-def get_price_slope(ticker_symbol:str) -> {}
-
-    historical_stock_data = get_historical_data(ticker_symbol, '3d', '2m')
-    stock_data = historical_stock_data.iloc[0].to_dict()
-    
-    del stock_data['Dividends']
-    del stock_data['Stock Splits']
-
-    stock_data['SMA'] = calculation.calculate_sma(historical_stock_data)[0]
-    stock_data['PREVSMA'] = calculation.calculate_sma(historical_stock_data)[1]
-    stock_data['EMA'] = calculation.calculate_ema(historical_stock_data)
-    stock_data['PREVPRICE'] = historical_stock_data.iloc[2].to_dict()['Close']
-
-    return stock_data
-
-
-
-
+def get_price_slope(ticker_symbol:str):
+    n = 10 # checks last 10 minutes of data
+    historical_stock_data = get_historical_data(ticker_symbol, '1d', '1m')
+    stock_price_by_time = []
+    for i in range(-n, 0):
+        stock_price_by_time.append(historical_stock_data.iloc[i].to_dict()['Close'])
+    print(stock_price_by_time)
+    slope = util.linear_regress_slope(1, stock_price_by_time)
+    return slope
 
 def get_stock_company_name(ticker_symbol:str):
     return yf.Ticker(ticker_symbol).info['shortName']

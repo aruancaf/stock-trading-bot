@@ -14,12 +14,8 @@ class Alpaca:
         print("Closed", ticker_symbol, "position")
 
     def sell_all_positions(self):
-        orders = self.api.list_orders(status="open")
-        for order in orders:
-            self.api.cancel_order(order.id)
-        positions = self.api.list_positions()
-        for position in positions:
-            self.api.close_position(position.symbol)
+        self.api.close_all_positions()
+        self.api.cancel_all_orders()
         print("Closed all positions")
 
     def get_positions_tickers(self):

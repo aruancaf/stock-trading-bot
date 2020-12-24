@@ -1,4 +1,19 @@
 import math
+import pandas
+
+# param history : pd.DataFrame
+# Return format: [current_sma, previous_sma]
+def calculate_sma(history) -> []:
+    summation = 0
+    for row in history.iterrows():
+        summation += row[1]['Close']
+    return [summation/len(history.index), (summation - history.iloc[-2]['Close'])/(len(history.index)-1)]
+
+# param history : pd.DataFrame
+def calculate_ema(history) -> int:
+    sma = calculate_sma(history)
+    weighted_multiplier = 2 / (len(history.index) + 1)
+    return history.iloc[-1]['Close']  * weighted_multiplier + sma[1] * (1 - weighted_multiplier)
 
 def partition_array(array, number_of_partitions):
     partition_size = math.ceil(len(array)/number_of_partitions)
@@ -37,7 +52,6 @@ def linear_regress_slope(x_step, y_values):
 
     x_std = (x_summation_stdev/(len(y_values)-1))**0.5
     y_std = (y_summation_stdev/(len(y_values)-1))**0.5
-
 
     summation_temp = 0
     for i in range(0, len(y_values)):

@@ -13,15 +13,17 @@ import news_classifier as nc
 def stock_analyzer(stocks):
     for stock_ticker in stocks:
         if stock_ticker not in all_active_positions.keys():
-            stock_score = 0
-            print("Analyzing", stock_ticker)
-            stock_score += sa.moving_average_checker(stock_ticker)
-            stock_score += nc.sentiment_analyzer(stock_ticker)
-            if stock_score >= 0.3:
-                alpaca.create_order(stock_ticker, 1) #todo: calculate order amount
-                active_positions_to_check[stock_ticker] = sdg.get_current_stock_data(stock_ticker)['Close']
-                all_active_positions[stock_ticker] = sdg.get_current_stock_data(stock_ticker)['Close']
-
+            try:
+                stock_score = 0
+                print("Analyzing", stock_ticker)
+                stock_score += sa.moving_average_checker(stock_ticker)
+                stock_score += nc.sentiment_analyzer(stock_ticker)
+                if stock_score >= 0.3:
+                    alpaca.create_order(stock_ticker, 1) #todo: calculate order amount
+                    active_positions_to_check[stock_ticker] = sdg.get_current_stock_data(stock_ticker)['Close']
+                    all_active_positions[stock_ticker] = sdg.get_current_stock_data(stock_ticker)['Close']
+            except IndexError:
+                pass
 def stock_position_analyzer():
     while True:
         for position in active_positions_to_check.keys():
@@ -59,6 +61,7 @@ if __name__ == "__main__":
     
     while True:
         current_time = datetime.now().strftime("%H:%M")
+        current_time = "12:01"
         if current_time > const.STOCK_MARKET_OPEN_TIME and current_time < const.STOCK_MARKET_CLOSE_TIME:
             if first_time_run:
                 threading.Thread(target=stock_position_analyzer).start()
