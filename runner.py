@@ -11,28 +11,36 @@ import util
 import news_classifier as nc
 import requests
 
-def stock_analyzer(stocks):
-    for stock_ticker in stocks:
+def daytrading_stock_analyzer(stocks):
+    for stock_ticker in stocks: #purchases stocks based on daytrading patterns
         try:
             stock_score = 0
             print("Analyzing", stock_ticker)
             stock_score += sa.moving_average_checker(stock_ticker)
-            stock_score += nc.sentiment_analyzer(stock_ticker)
             if stock_score >= 0.3 and stock_ticker not in all_active_positions.keys():
                 alpaca.create_order(stock_ticker, 1) #todo: calculate order amount
                 active_positions_to_check[stock_ticker] = sdg.get_current_stock_data(stock_ticker)['Close']
                 all_active_positions[stock_ticker] = sdg.get_current_stock_data(stock_ticker)['Close']
-        except IndexError:
+                print("Based on daytrading pattern analysis, buying", stock_ticker)
+        except Exception as e:
             pass
-        except (requests.exceptions.HTTPError, alpaca.api.rest.APIError):
-            pass
+
+def news_stock_analyzer(stock_ticker):
+    stock_score = 0
+    stock_score += nc.sentiment_analyzer(news.get_news(stock_ticker))
+    print(stock_ticker, "news score:", stock_score)
+    if stock_score >= 0.35 and stock_ticker not in all_active_positions.keys():
+        alpaca.create_order(stock_ticker, 1) #todo: calculate order amount
+        active_positions_to_check[stock_ticker] = sdg.get_current_stock_data(stock_ticker)['Close']
+        all_active_positions[stock_ticker] = sdg.get_current_stock_data(stock_ticker)['Close']
+        print("Based on News analysis, buying", stock_ticker)
+
+
 def stock_position_analyzer():
     while True:
         for position in active_positions_to_check.keys():
             threading.Thread(target=check_perform_sell, args=(position, active_positions_to_check[position])).start()
         active_positions_to_check.clear()
-
-
 
 def check_perform_sell(stock_ticker, purchase_price):
     while True:
@@ -62,7 +70,7 @@ if __name__ == "__main__":
 
     time.sleep(2)
     first_time_run = True
-    
+
     while True:
         current_time = datetime.now().strftime("%H:%M")
         if current_time > const.STOCK_MARKET_OPEN_TIME and current_time < const.STOCK_MARKET_CLOSE_TIME:
@@ -72,7 +80,10 @@ if __name__ == "__main__":
             active_stocks = scraper.active_stocks()
             partitioned_stocks = util.partition_array(active_stocks, const.STOCK_SCANNER_PARTITION_COUNT)
             for partition in partitioned_stocks:
-                threading.Thread(target=stock_analyzer, args=[partition]).start()
+                threading.Thread(target=daytrading_stock_analyzer, args=[partition]).start()
+
+            for stock_ticker in const.STOCKS_TO_CHECK: #purchases stocks based on news info
+                threading.Thread(target=news_stock_analyzer, args=(stock_ticker,)).start()
 
         else:
             print("Market Close")

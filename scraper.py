@@ -14,4 +14,4 @@ def active_stocks():
         for result in results.find_all('a'):
             href = result['href']
             if '=' in href: scraped_stocks.append(href[href.find('=') + 1:])
-    return scraped_stocks 
+    return list(set(scraped_stocks))

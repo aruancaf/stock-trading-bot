@@ -21,7 +21,7 @@ class Alpaca:
     def get_positions_tickers(self):
         positions = self.api.list_positions()
         positions_tickers = []
-        for position in positions:
+        for position in positions: #add order ?
             positions_tickers.append(position.symbol)
         return positions_tickers
 

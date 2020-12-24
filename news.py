@@ -13,9 +13,11 @@ class NewsGetter:
     def get_news(self, stock):
         search_terms=stock + " " + re.sub(r'[^\w\s]','',sdg.get_stock_company_name(stock))
         articles = self.api.get_everything(q=stock, qintitle=stock + " OR " + re.sub(r'[^\w\s]','',sdg.get_stock_company_name(stock)), language='en', page_size=100)['articles']
-        qintitle=stock + " OR " + re.sub(r'[^\w\s]','',sdg.get_stock_company_name(stock))
+        # qintitle=stock + " OR " + re.sub(r'[^\w\s]','',sdg.get_stock_company_name(stock))
         news_descriptions = []
         for news in articles:
             if util.check_overlap(search_terms, news['description']):
+                # print(search_terms)
+                # print(news['description'])
                 news_descriptions.append(news['description'])
         return news_descriptions
