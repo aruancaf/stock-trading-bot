@@ -1,11 +1,9 @@
 import news_classifier
 import news
 import stock_data_gatherer as sdg
-
-ticker = "AAPL"
+import constants
 
 b = news.NewsGetter()
 
-a = b.get_news(ticker)
-
-print("Stock score:", news_classifier.sentiment_analyzer(a))
+for ticker in constants.STOCKS_TO_CHECK:
+    print("Ticker Symbol", ticker, "Stock score:", news_classifier.sentiment_analyzer(b.get_news(ticker)))

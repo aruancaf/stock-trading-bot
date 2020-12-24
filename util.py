@@ -21,8 +21,6 @@ def check_overlap(phrase, sentence):
                 if len(phrase[i:i+3]) != 3:
                     break
                 if phrase[i:i+3] in sentence:
-                    print(phrase[i:i+3])
-                    print(sentence)
                     return True
 
     return False

@@ -16,8 +16,6 @@ def sentiment_analyzer(sentences):
     number_of_neutral = 0
     for sentence in sentences:
         sentence_score = sentiment_polarity_analyzer.polarity_scores(sentence)['compound']
-        print(sentence, "\n\n")
-        print("Score:", sentence_score)
         summation += sentence_score
         if sentence_score == 0:
             number_of_neutral += 1
