@@ -6,10 +6,6 @@ ticker = "AAPL"
 
 b = news.NewsGetter()
 
-a = b.get_news(ticker + " " + sdg.get_stock_company_name(ticker))
+a = b.get_news(ticker)
 
-for i in a:
-    print(i)
-    news_classifier.sentiment_analyzer(i)
-    print("\n\n\n\n")
-
+print("Stock score:", news_classifier.sentiment_analyzer(a))
