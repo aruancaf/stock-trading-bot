@@ -22,6 +22,41 @@ def get_current_stock_data(ticker_symbol: str) -> {}:
 
     return stock_data
 
+def get_volume_slope(ticker_symbol:str) -> {}
+    n = 5
+    
+    
+    historical_stock_data = get_historical_data(ticker_symbol, '3d', '2m')
+    stock_data = historical_stock_data.iloc[0].to_dict()
+    
+    del stock_data['Dividends']
+    del stock_data['Stock Splits']
+
+    stock_data['SMA'] = calculation.calculate_sma(historical_stock_data)[0]
+    stock_data['PREVSMA'] = calculation.calculate_sma(historical_stock_data)[1]
+    stock_data['EMA'] = calculation.calculate_ema(historical_stock_data)
+    stock_data['PREVPRICE'] = historical_stock_data.iloc[2].to_dict()['Close']
+
+    return stock_data
+
+def get_price_slope(ticker_symbol:str) -> {}
+
+    historical_stock_data = get_historical_data(ticker_symbol, '3d', '2m')
+    stock_data = historical_stock_data.iloc[0].to_dict()
+    
+    del stock_data['Dividends']
+    del stock_data['Stock Splits']
+
+    stock_data['SMA'] = calculation.calculate_sma(historical_stock_data)[0]
+    stock_data['PREVSMA'] = calculation.calculate_sma(historical_stock_data)[1]
+    stock_data['EMA'] = calculation.calculate_ema(historical_stock_data)
+    stock_data['PREVPRICE'] = historical_stock_data.iloc[2].to_dict()['Close']
+
+    return stock_data
+
+
+
+
 
 def get_stock_company_name(ticker_symbol:str):
     return yf.Ticker(ticker_symbol).info['shortName']

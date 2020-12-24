@@ -8,7 +8,7 @@ import news
 import stock_analysis as sa
 import stock_data_gatherer as sdg
 import util
-
+import news_classifier as nc
 
 def stock_analyzer(stocks):
     for stock_ticker in stocks:
@@ -16,6 +16,7 @@ def stock_analyzer(stocks):
             stock_score = 0
             print("Analyzing", stock_ticker)
             stock_score += sa.moving_average_checker(stock_ticker)
+            stock_score += nc.sentiment_analyzer(stock_ticker)
             if stock_score >= 0.3:
                 alpaca.create_order(stock_ticker, 1) #todo: calculate order amount
                 active_positions_to_check[stock_ticker] = sdg.get_current_stock_data(stock_ticker)['Close']

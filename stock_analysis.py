@@ -9,3 +9,6 @@ def moving_average_checker(ticker_symbol) -> int:
        return -0.3
    return 0
 
+def volume_checker(ticker_symbol) -> int:
+    stock_status = sdg.get_current_stock_data(ticker_symbol)
+
