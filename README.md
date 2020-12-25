@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # stock-trading-bot
 
 Stock trading bot written in python that evaluates active stocks and buy/sells undervalued and up-trending stocks.
@@ -29,3 +30,13 @@ This code for this bot can be broken into 3 different parts:
   news articles.
   
 by Aditya Oberai
+=======
+TODO:
+
+Scrape active stocks
+
+Check active and purchased stocks simultaneously
+
+Buy or Sell Stocks
+
+>>>>>>> r1remote/main

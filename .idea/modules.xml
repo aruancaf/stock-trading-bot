@@ -2,7 +2,11 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+<<<<<<< HEAD
       <module fileurl="file://$PROJECT_DIR$/.idea/stock-trading-bot.iml" filepath="$PROJECT_DIR$/.idea/stock-trading-bot.iml" />
+=======
+      <module fileurl="file://$PROJECT_DIR$/.idea/stock-trading-bot-v2.iml" filepath="$PROJECT_DIR$/.idea/stock-trading-bot-v2.iml" />
+>>>>>>> r1remote/main
     </modules>
   </component>
 </project>

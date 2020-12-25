@@ -1,2 +1,12 @@
 # Default ignored files
+<<<<<<< HEAD
 /workspace.xml
+=======
+/shelf/
+/workspace.xml
+# Datasource local storage ignored files
+/dataSources/
+/dataSources.local.xml
+# Editor-based HTTP Client requests
+/httpRequests/
+>>>>>>> r1remote/main
