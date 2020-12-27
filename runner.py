@@ -17,7 +17,8 @@ def daytrading_stock_analyzer(stocks):
             stock_score = 0
             print("Analyzing", stock_ticker)
             stock_score += sa.moving_average_checker(stock_ticker)
-            if stock_score >= 0.3 and stock_ticker not in all_active_positions.keys():
+            stock_score += sa.volume_checker(stock_ticker)
+            if stock_score >= 0.2 and stock_ticker not in all_active_positions.keys():
                 alpaca.create_order(stock_ticker, 1) #todo: calculate order amount
                 active_positions_to_check[stock_ticker] = sdg.get_current_stock_data(stock_ticker)['Close']
                 all_active_positions[stock_ticker] = sdg.get_current_stock_data(stock_ticker)['Close']
@@ -47,11 +48,10 @@ def check_perform_sell(stock_ticker, purchase_price):
         current_stock_price = sdg.get_current_stock_data(stock_ticker)['Close']
         price_change_percent = util.calculate_price_change(current_stock_price, all_active_positions[stock_ticker])
         print("Checking", stock_ticker, "Gains/Losses", price_change_percent, "Price: $", current_stock_price) 
-        if sa.moving_average_checker(stock_ticker) < 0 or price_change_percent <= -const.MAX_STOP_LOSS_PERCENT:
+        if sa.moving_average_checker(stock_ticker) < 0 or price_change_percent <= -const.MAX_STOP_LOSS_PERCENT or sa.volume_checker(stock_ticker) < 0:
             alpaca.sell_position(stock_ticker)
             del all_active_positions[stock_ticker]
             break
-
 
 if __name__ == "__main__":
 
@@ -73,6 +73,7 @@ if __name__ == "__main__":
 
     while True:
         current_time = datetime.now().strftime("%H:%M")
+        current_time = "12:01"
         if current_time > const.STOCK_MARKET_OPEN_TIME and current_time < const.STOCK_MARKET_CLOSE_TIME:
             if first_time_run:
                 threading.Thread(target=stock_position_analyzer).start()

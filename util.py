@@ -41,22 +41,24 @@ def check_overlap(phrase, sentence):
     return False
 
 def linear_regress_slope(x_step, y_values):
-    x_mean = (len(y_values)-1)/2
-    y_mean = sum(y_values)/len(y_values)
-    x_summation_stdev = 0
-    y_summation_stdev = 0
-    for i in range(0, len(y_values)):
-        x_summation_stdev += (i - x_mean)**2
-    for i in range(0, len(y_values)):
-        y_summation_stdev += (y_values[i] - y_mean)**2
+    try:
+        x_mean = (len(y_values)-1)/2
+        y_mean = sum(y_values)/len(y_values)
+        x_summation_stdev = 0
+        y_summation_stdev = 0
+        for i in range(0, len(y_values)):
+            x_summation_stdev += (i - x_mean)**2
+        for i in range(0, len(y_values)):
+            y_summation_stdev += (y_values[i] - y_mean)**2
 
-    x_std = (x_summation_stdev/(len(y_values)-1))**0.5
-    y_std = (y_summation_stdev/(len(y_values)-1))**0.5
+        x_std = (x_summation_stdev/(len(y_values)-1))**0.5
+        y_std = (y_summation_stdev/(len(y_values)-1))**0.5
 
-    summation_temp = 0
-    for i in range(0, len(y_values)):
+        summation_temp = 0
+        for i in range(0, len(y_values)):
             summation_temp += ((i - x_mean)/x_std)*((y_values[i] - y_mean)/y_std)
-    correlation_coefficent = summation_temp/(len(y_values) - 1)
-    slope = correlation_coefficent * y_std/x_std
-
-    return slope
+        correlation_coefficent = summation_temp/(len(y_values) - 1)
+        slope = correlation_coefficent * y_std/x_std
+        return slope
+    except Exception as e:
+        return 0

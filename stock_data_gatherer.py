@@ -23,17 +23,16 @@ def get_current_stock_data(ticker_symbol: str) -> {}:
     return stock_data
 
 def get_price_slope(ticker_symbol:str): #refactor maybe
-    n = 3 # checks last 3 minutes of data
+    n = 5 # checks last 3 minutes of data
     historical_stock_data = get_historical_data(ticker_symbol, '1d', '1m')
     stock_price_by_time = []
     for i in range(-n, 0):
         stock_price_by_time.append(historical_stock_data.iloc[i].to_dict()['Close'])
-    print(stock_price_by_time)
     slope = util.linear_regress_slope(1, stock_price_by_time)
     return slope
 
 def get_volume_slope(ticker_symbol:str): #refactor maybe
-    n = 3 # checks last 3 minutes of data
+    n = 5 # checks last 3 minutes of data
     historical_stock_data = get_historical_data(ticker_symbol, '1d', '1m')
     stock_volume_by_time = []
     for i in range(-n, 0):
@@ -42,5 +41,4 @@ def get_volume_slope(ticker_symbol:str): #refactor maybe
     return slope
 
 def get_stock_company_name(ticker_symbol:str):
-    print(yf.Ticker(ticker_symbol).info)
     return yf.Ticker(ticker_symbol).info['longName']
