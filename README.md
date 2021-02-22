@@ -1,16 +1,15 @@
 # stock-trading-bot
 
-Stock trading bot written in python that evaluates active stocks and buy/sells undervalued and up-trending stocks.
+Stock trading bot written in python that evaluates active stocks and buy/sells undervalued and up-trending stocks based on day trading patterns and news sentiment analysis.
 
 ## How does it work?
 
 This code for this bot can be broken into 3 different parts:
 
   1) Web scrapes active stocks from yahoo finance.
-  2) Evaluates active stocks using different strategies such as EMA crossovers and resistance breakthroughs.
-  3) Evaluates current stock portfolio by checking if stock price has dropped below EMA line or has seen a significant
-     decrease from a day's high.
-  4) Buys and sells paper(fake) stocks based on previous data. Stores purchased and sold stocks within ``` stock_portfolio.json ```
+  2) Evaluates active stocks (can evaluate 100s of stocks per minute as the application is multithreaded) using different strategies such as EMA crossovers/resistance breakthroughs, regression stock direction testing, and news sentiment analysis (buys and sells stocks based on quarterly earnings information or big news!).
+  3) Evaluates current stock portfolio by checking if any stock no longer seems worth holding.
+  4) Sends buy and sell requests using the alpaca paper trading api
  
  That's it!
 
@@ -21,11 +20,31 @@ This code for this bot can be broken into 3 different parts:
 - No time commitment after the bot has been setup.
 - It is fun lol :smile:
 
+
+### How to use it
+- Clone the repository: git clone https://github.com/aoberai/stock-trading-bot.git
+- Add a credentials.py file which has the information to your api keys / passwords
+    1)Alpaca api for stock buying and selling handler + front end : https://alpaca.markets
+    2)News API for stock sentiment analysis : https://newsapi.org
+
+- Put the following into your credentials.py file:
+-------------------------
+ALP_API_ID=""                                                             
+ALP_SECRET_KEY=""
+NEWS_API_KEY=""
+-------------------------
+- Run the runner.py file! 
+
+Please create an issue if you are having problems getting the repo to work or if any part of the codebase look confusing -- I can help out.
+
 #### To do List
 
 - Add more trading strategies to ensure better returns.
 - Refine buy and selling time
-- Add machine learning sentiment analysis such that the stock bot can act upon earning reports and positive/negative 
-  news articles.
+- Differentiate between long term and short term day trading positions
+
+
+This repository is constantly getting better so please feel free to work with it and post pullrequests if you encounter any bugs or want to add additional functionality. 
+
   
 by Aditya Oberai
