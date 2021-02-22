@@ -27,11 +27,11 @@ This code for this bot can be broken into 3 different parts:
     1)Alpaca api for stock buying and selling handler + front end : https://alpaca.markets
     2)News API for stock sentiment analysis : https://newsapi.org
 
-- Put the following into your credentials.py file:
+- Put the following 3 variables into your credentials.py file:
 -------------------------
-ALP_API_ID=""                                                             
-ALP_SECRET_KEY=""
-NEWS_API_KEY=""
+- ALP_API_ID=""                                                             
+- ALP_SECRET_KEY=""
+- NEWS_API_KEY=""
 -------------------------
 - Run the runner.py file! 
 
