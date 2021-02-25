@@ -23,6 +23,9 @@ This code for this bot can be broken into 3 different parts:
 
 ### How to use it
 - Clone the repository: git clone https://github.com/aoberai/stock-trading-bot.git
+- Install dependencies
+	pip3 install -r requirements.txt for linux bash
+	py -m pip install -r requirements.txt for windows command prompt
 - Add a credentials.py file which has the information to your api keys / passwords
     1)Alpaca api for stock buying and selling handler + front end : https://alpaca.markets
     2)News API for stock sentiment analysis : https://newsapi.org
