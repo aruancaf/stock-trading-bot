@@ -11,10 +11,20 @@ def moving_average_checker(ticker_symbol) -> int:
 
 def volume_checker(ticker_symbol) -> int:
     stock_status = sdg.get_current_stock_data(ticker_symbol)
-    print(ticker_symbol, ": Price: ", sdg.get_price_slope(ticker_symbol)/(0.2*stock_status['Close']), " Volume: ", sdg.get_volume_slope(ticker_symbol)/(0.2*stock_status['Volume']))
-    if sdg.get_price_slope(ticker_symbol)/(0.2*stock_status['Close']) > 0.04 and sdg.get_volume_slope(ticker_symbol)/(0.2*stock_status['Volume']) > 1:
+    try:
+        volume =  sdg.get_volume_slope(ticker_symbol)/(0.2*stock_status['Volume'])
+    except ZeroDivisionError:
+        volume = 0
+    try:
+        price = sdg.get_price_slope(ticker_symbol)/(0.2*stock_status['Close'])
+    except ZeroDivisionError:
+        price = 0
+
+
+    print(ticker_symbol, ": Price: ", price, " Volume: ", volume)
+    if price > 0.04 and volume > 1:
         return 0.2
-    elif sdg.get_price_slope(ticker_symbol)/(0.2*stock_status['Close']) < -0.03 and sdg.get_volume_slope(ticker_symbol)/(0.2*stock_status['Volume']) > 0.8:
+    elif price < -0.03 and volume > 0.8:
         return -0.2
     return 0
 
