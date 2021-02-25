@@ -15,3 +15,7 @@ soupsieve==2.2
 urllib3==1.26.3
 websocket-client==0.57.0
 websockets==8.1
+yfinance==0.1.55
+nltk==3.5
+newsapi-python==0.2.6
+
