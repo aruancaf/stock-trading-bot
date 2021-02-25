@@ -6,7 +6,7 @@ import constants
 
 financial_word_classification = {"bullish": 1, "bearish": -1, "volatile": -0.3, "risen": 0.5, "fell": -0.5, "growth": 0.5, "rally": 0.5, "buy": 0.7, "sell":-0.7} #add other words
 
-
+nltk.download('vader_lexicon')
 sentiment_polarity_analyzer = SentimentIntensityAnalyzer()
 
 sentiment_polarity_analyzer.lexicon.update(financial_word_classification)
