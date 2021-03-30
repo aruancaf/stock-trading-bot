@@ -58,6 +58,6 @@ Please create an issue if you are having problems getting the repo to work or if
 - Refine buy and selling time
 - Differentiate between long term and short term day trading positions
 
-This repository is constantly getting better so please feel free to work with it and post pull requests if you encounter any bugs or want to add additional functionality. Star the repo if you found it useful :smile:.
+This repository is constantly getting better so please feel free to work with it and post pull requests if you encounter any bugs or want to add additional functionality. 
 
 by Aditya Oberai
