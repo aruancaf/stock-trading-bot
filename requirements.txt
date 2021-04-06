@@ -11,7 +11,7 @@ pytz==2021.1
 requests==2.25.1
 six==1.15.0
 soupsieve==2.2
-urllib3==1.26.3
+urllib3==1.26.4
 websocket-client==0.57.0
 websockets==8.1
 yfinance==0.1.55
