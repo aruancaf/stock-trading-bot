@@ -40,7 +40,8 @@ def check_overlap(phrase, sentence):
 
     return False
 
-def linear_regress_slope(x_step, y_values):
+# assumes x values have step of 1
+def linear_regression_slope(y_values):
     try:
         x_mean = (len(y_values)-1)/2
         y_mean = sum(y_values)/len(y_values)
