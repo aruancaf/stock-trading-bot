@@ -2,7 +2,7 @@ import yfinance as yf
 import pandas as pd
 import time
 import pandas as pd
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 import os
 from training_input import TrainingInput
 import random
@@ -10,25 +10,25 @@ import numpy as np
 import contextlib
 
 # https://towardsdatascience.com/lstm-for-time-series-prediction-de8aeb26f2ca
-
+# TODO: I don't think it is generating all possible combs
 stocks = []
 with open("stocks_to_download.txt", "r") as f:
     stocks = [i.replace("\n", "") for i in f.readlines()]
 
-download_path = "timeseries_data/"
-for file in os.listdir(download_path):
-    os.remove(os.path.join(download_path, file))
+download_path = "raw_timeseries_data/"
+for file in os.listdir(download_path): os.remove(os.path.join(download_path, file))
 
 
 
 
 final_model_input = []
+start_date = date.today()-timedelta(days=29) # starts downloading data starting from this date
+end_date = date.today()
+
+print("Downloading from %s to %s" % (start_date, end_date))
 
 for stock in stocks:
-    start_date = "2021-06-16"  # starts downloading data starting from this date
-    end_date = "2021-07-15"
-    download_interval = pd.date_range(start=start_date, end=end_date)[
-        ::7]  # only allows download for 7 day intervals
+    download_interval = pd.date_range(start=start_date, end=end_date)[::7]  # only allows download for 7 day intervals
 
     for i in range(0, len(download_interval) - 1):
         with open(os.devnull, "w") as f, contextlib.redirect_stdout(f):
@@ -67,6 +67,11 @@ for stock in stocks:
         close_prices_7_day = data['Close'].to_numpy()
         volume_7_day = data['Volume'].to_numpy()
 
+        # if len(close_prices_7_day) == 0:
+        #     print("Found no data", stock)
+        #     print(data.head())
+        #     exit(0)
+
         max_price_7_day = max(close_prices_7_day)
         min_price_7_day = min(close_prices_7_day)
 
@@ -85,6 +90,8 @@ for stock in stocks:
 # shuffle input
 
 random.shuffle(final_model_input)
+
+print("Cumulative Dataset Size before balancing", len(final_model_input))
 
 # balance input
 
@@ -120,4 +127,30 @@ random.shuffle(final_model_input)
 
 
 print("Training Dataset Size", len(final_model_input))
+
+
+# unpack into x and y training data
+
+train_x, train_y, val_x, val_y = [], [], [], []
+
+val_split = 0.2
+
+for i in range(0, len(final_model_input)):
+    if i < (1 - val_split) * len(final_model_input):
+        train_x.append(final_model_input[i].get_serialized_input())
+        train_y.append(final_model_input[i].get_serialized_output())
+    else:
+        val_x.append(final_model_input[i].get_serialized_input())
+        val_y.append(final_model_input[i].get_serialized_output())
+
+
+save_status = input("Would you like to save? yes or no: ")
+if save_status == "yes":
+    np.savez("train", np.array(train_x), np.array(train_y))
+    np.savez("val", np.array(val_x), np.array(val_y))
+
+
+np.array(val_x), np.array(val_y)
+
+
 

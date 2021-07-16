@@ -1,32 +1,31 @@
 import numpy as np
 
-
 class TrainingInput:
 
     # assumes x values have step of 1
     def __linear_regression_slope(self, y_values):
-        try:
-            x_mean = (len(y_values) - 1) / 2
-            y_mean = sum(y_values) / len(y_values)
-            x_summation_stdev = 0
-            y_summation_stdev = 0
-            for i in range(0, len(y_values)):
-                x_summation_stdev += (i - x_mean)**2
-            for i in range(0, len(y_values)):
-                y_summation_stdev += (y_values[i] - y_mean)**2
+        x_mean = (len(y_values) - 1) / 2
+        y_mean = sum(y_values) / len(y_values)
+        x_summation_stdev = 0
+        y_summation_stdev = 0
+        for i in range(0, len(y_values)):
+            x_summation_stdev += (i - x_mean)**2
+        for i in range(0, len(y_values)):
+            y_summation_stdev += (y_values[i] - y_mean)**2
 
-            x_std = (x_summation_stdev / (len(y_values) - 1))**0.5
-            y_std = (y_summation_stdev / (len(y_values) - 1))**0.5
+        x_std = (x_summation_stdev / (len(y_values) - 1))**0.5
+        y_std = (y_summation_stdev / (len(y_values) - 1))**0.5
 
-            summation_temp = 0
-            for i in range(0, len(y_values)):
-                summation_temp += ((i - x_mean) / x_std) * \
-                    ((y_values[i] - y_mean) / y_std)
-            correlation_coefficent = summation_temp / (len(y_values) - 1)
-            slope = correlation_coefficent * y_std / x_std
-            return slope
-        except Exception as e:
+        if y_std == 0:
             return 0
+
+        summation_temp = 0
+        for i in range(0, len(y_values)):
+            summation_temp += ((i - x_mean) / x_std) * \
+                ((y_values[i] - y_mean) / y_std)
+        correlation_coefficent = summation_temp / (len(y_values) - 1)
+        slope = correlation_coefficent * y_std / x_std
+        return slope
 
     def __init__(
         self,

@@ -1,3 +1,4 @@
 credentials.py
 venv/
 __pycache__
+*.npz
