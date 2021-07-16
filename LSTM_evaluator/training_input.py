@@ -36,6 +36,10 @@ class TrainingInput:
         high_volume: float,
         low_volume: float,
             timeseries_volume):
+
+        self.timeseries_price = timeseries_price
+        self.timeseries_volume = timeseries_volume
+
         # print("Initializing Input")
         price_summation = high_price + low_price + \
             sum(timeseries_price[-30:-15])
@@ -77,9 +81,17 @@ class TrainingInput:
     [0, 0, 1] if should sell
     '''
     def get_serialized_output(self):
-        return [1, 0, 0] if self.timeseries_price_slope_y > 0.5 else ([0, 1, 0] if self.timeseries_price_slope_y > -0.5 else [0, 0, 1])
+        # print("Slope: ", self.timeseries_price_slope_y)
+        return [1, 0, 0] if self.timeseries_price_slope_y > 0.005 else ([0, 1, 0] if self.timeseries_price_slope_y > -0.005 else [0, 0, 1])
+
+    def get_original_timeseries_price(self):
+        return self.timeseries_price
+
+    def get_original_timeseries_volume(self):
+        return self.timeseries_volume
 
     @staticmethod
     def map(output):
         return {"[1, 0, 0]": "buy", "[0, 1, 0]": "neutral", "[0, 0, 1]": "sell"}[str(output)]
+
 
