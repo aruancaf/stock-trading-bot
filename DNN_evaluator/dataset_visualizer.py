@@ -6,6 +6,8 @@ from training_input import TrainingInput
 from sklearn.linear_model import LinearRegression
 
 # assumes x values have step of 1
+
+
 def linear_regression_slope(y_values):
     x_mean = (len(y_values) - 1) / 2
     y_mean = sum(y_values) / len(y_values)
@@ -37,7 +39,6 @@ for i in range(0, 100):
     fig.set_size_inches((8, 8))
     # print(dataset['x'][0][0])
 
-
     axs[0].plot(range(30), dataset['x'][i][0])
     # axs[0].plot(range(30), [dataset['x'][0][1][0]] * 30)
     # axs[0].plot(range(30), [dataset['x'][0][1][1]] * 30)
@@ -45,14 +46,18 @@ for i in range(0, 100):
     axs[0].set_ylabel('Normalized Price')
 
     axs[0].grid(True)
-
-    print(TrainingInput.map(dataset['y'][i].tolist()))
-    print("Slope: %0.5f" % linear_regression_slope(dataset['x'][i][0]))
-    print("Slope: %0.5f" % LinearRegression().fit(np.array(range(0, 30)).reshape((-1, 1)), dataset['x'][i][0]).coef_)
-
-
+    slope = linear_regression_slope(dataset['x'][i][0])
+    print(TrainingInput.map(dataset['y'][i].tolist()) + " Slope: %0.5f" % slope, end='\r') # doesn't match up since dataset['y'] is for future label and dataset['x'] is model input
+    # print(
+    #     "Slope: %0.5f" %
+    #     LinearRegression().fit(
+    #         np.array(
+    #             range(
+    #                 0, 30)).reshape(
+    #             (-1, 1)), dataset['x'][i][0]).coef_)
+    
+    axs[0].plot(range(30), [slope * i for i in range(30)])
     fig.tight_layout()
     # plt.show(block=False)
     # time.sleep(5)
     plt.show()
-
