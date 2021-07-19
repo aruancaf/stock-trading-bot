@@ -54,7 +54,7 @@ class TrainingInput:
         price_summation = high_price + low_price + \
             sum(timeseries_price[indices[0][0]:indices[0][1]])
         price_mean = price_summation / (len(timeseries_price[indices[0][0]:indices[0][1]]) + 2)
-        price_std = np.std(timeseries_price[indices[0][0]:indices[0][1]] + [high_price, low_price])
+        price_std = np.std(np.array(list(timeseries_price[indices[0][0]:indices[0][1]]) + [high_price, low_price]))
 
         volume_summation = sum(timeseries_volume[indices[0][0]:indices[0][1]])
         volume_mean = (volume_summation / len(timeseries_volume[indices[0][0]:indices[0][1]]))

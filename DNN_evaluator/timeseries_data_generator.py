@@ -106,6 +106,7 @@ random.shuffle(final_model_input)
 input_buy = []
 input_neutral = []
 input_sell = []
+test_input = [] # stores rest of samples which are removed for balancing
 
 for inputl in final_model_input:
     input_buysellneutral = TrainingInput.map(inputl.get_serialized_output(), True)
@@ -121,20 +122,20 @@ print("Category Breakdown - Buy Window Quantity: %f, Sell Window Quantity: %f, N
 # most number of buy sell and neutral classifications in training set allowed
 class_max = min(len(input_buy), len(input_neutral), len(input_sell))
 while len(input_buy) > class_max:
-    input_buy.pop()
+    test_input.append(input_buy.pop())
 while len(input_sell) > class_max:
-    input_sell.pop()
+    test_input.append(input_sell.pop())
 while len(input_neutral) > class_max:
-    input_neutral.pop()
+    test_input.append(input_neutral.pop())
 
-assert len(input_buy) == len(input_sell) == len(
-    input_neutral)  # asserts balanced
+assert len(input_buy) == len(input_sell) == len(input_neutral)  # asserts balanced
 
 final_model_input = input_buy + input_sell + input_neutral
 
 # shuffle input after balance
 
 random.shuffle(final_model_input)
+random.shuffle(test_input)
 
 
 print("Training Dataset Size", len(final_model_input))
@@ -143,7 +144,7 @@ print("Training Dataset Size", len(final_model_input))
 # unpack into x and y training data
 
 dataset_x, dataset_y = [], []
-
+test_dataset_x, test_dataset_y = [], []
 
 for i in range(0, len(final_model_input)):
     dataset_x.append(final_model_input[i].get_serialized_input())
@@ -166,6 +167,9 @@ for i in range(0, len(final_model_input)):
         # time.sleep(5)
         plt.show()
 
+for i in range(0, len(test_input)):
+    test_dataset_x.append(test_input[i].get_serialized_input())
+    test_dataset_y.append(test_input[i].get_serialized_output())
 
 save_status = input("Would you like to save? yes or no: ")
 if save_status == "yes":
@@ -173,3 +177,7 @@ if save_status == "yes":
         "timeseries_dataset",
         x=np.array(dataset_x),
         y=np.array(dataset_y))
+    np.savez(
+        "timeseries_test_dataset",
+        x=np.array(test_dataset_x),
+        y=np.array(test_dataset_y))

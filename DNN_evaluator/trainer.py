@@ -2,7 +2,7 @@ import datetime
 import numpy as np
 import tensorflow as tf
 from tensorflow import keras
-
+import os
 
 model = tf.keras.models.Sequential()
 model.add(keras.Input(shape=(4, 30,)))
@@ -54,5 +54,10 @@ model.fit(
     epochs=100,
     callbacks=[tensorboard_callback, early_stopping_callback])
 
+vers = []
+model_name = "trading_modelV"
+for i in os.listdir():
+    if model_name in i:
+        vers.append(int(i.replace(model_name, "").replace(".h5", "")))
 
-model.save("trading_model.h5")
+model.save(model_name + str(max(vers) + 1) + ".h5")
