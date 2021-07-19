@@ -83,7 +83,8 @@ for stock in stocks:
         # print("\n%s\nMax: %s Min: %s\n\n" % (stock, str(max_price_7_day), str(min_price_7_day)))
         for i in range(0, len(close_prices_7_day) - timeseries_length):
             if price_dates[i] == price_dates[i + timeseries_length]: # capture x min timeseries windows from same day to prevent capturing interday news-based morning price swings
-                final_model_input.append(TrainingInput(max_price_7_day,
+                final_model_input.append(TrainingInput(True,
+                                                       max_price_7_day,
                                                        min_price_7_day,
                                                        close_prices_7_day[i:i + timeseries_length].tolist(),
                                                        max_volume_7_day,
@@ -107,7 +108,7 @@ input_neutral = []
 input_sell = []
 
 for inputl in final_model_input:
-    input_buysellneutral = TrainingInput.map(inputl.get_serialized_output())
+    input_buysellneutral = TrainingInput.map(inputl.get_serialized_output(), True)
     if input_buysellneutral == "buy":
         input_buy.append(inputl)
     elif input_buysellneutral == "neutral":
@@ -158,7 +159,7 @@ for i in range(0, len(final_model_input)):
 
         axs[0].grid(True)
         slope = TrainingInput.linear_regression_slope(dataset_x[i][0])
-        print(TrainingInput.map(dataset_y[i].tolist()) + " Slope: %0.5f" % slope, end='\r')
+        print(TrainingInput.map(dataset_y[i].tolist(), True) + " Slope: %0.5f" % slope, end='\r')
         axs[0].plot(range(30), [slope * i for i in range(30)])
         fig.tight_layout()
         # plt.show(block=False)

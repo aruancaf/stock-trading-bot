@@ -30,29 +30,35 @@ class TrainingInput:
 
     def __init__(
             self,
+            is_training,
             high_price: float,
             low_price: float,
             timeseries_price,
             high_volume: float,
             low_volume: float,
             timeseries_volume):
-
-        # first 30 elements are historical data points w/ 1 min incr; next 10
-        # min are used for prediction
-        assert len(timeseries_price) == 40 and len(timeseries_volume) == 40
+        self.is_training = is_training
+        if is_training:
+            indices = [[-40,-10], [-10, None]]
+            # first 30 elements are historical data points w/ 1 min incr; next 10
+            # min are used for prediction
+            assert len(timeseries_price) == 40 and len(timeseries_volume) == 40
+        else:
+            indices = [[None, None], [-10, None]]
+            assert len(timeseries_price) == 30 and len(timeseries_volume) == 30
 
         self.timeseries_price = timeseries_price
         self.timeseries_volume = timeseries_volume
 
         # print("Initializing Input")
         price_summation = high_price + low_price + \
-            sum(timeseries_price[-40:-10])
-        price_mean = price_summation / (len(timeseries_price[-40:-10]) + 2)
-        price_std = np.std(timeseries_price[-40:-10] + [high_price, low_price])
+            sum(timeseries_price[indices[0][0]:indices[0][1]])
+        price_mean = price_summation / (len(timeseries_price[indices[0][0]:indices[0][1]]) + 2)
+        price_std = np.std(timeseries_price[indices[0][0]:indices[0][1]] + [high_price, low_price])
 
-        volume_summation = sum(timeseries_volume[-40:-10])
-        volume_mean = (volume_summation / len(timeseries_volume[-40:-10]))
-        volume_std = np.std(timeseries_volume[-40:-10])
+        volume_summation = sum(timeseries_volume[indices[0][0]:indices[0][1]])
+        volume_mean = (volume_summation / len(timeseries_volume[indices[0][0]:indices[0][1]]))
+        volume_std = np.std(timeseries_volume[indices[0][0]:indices[0][1]])
 
         if price_std == 0:
             price_std = 1
@@ -70,13 +76,13 @@ class TrainingInput:
         timeseries_price_normalized = [(price - price_mean) /
                                        price_std for price in timeseries_price]
 
-        self.timeseries_price_x = timeseries_price_normalized[-40:-10]
+        self.timeseries_price_x = timeseries_price_normalized[indices[0][0]:indices[0][1]]
         self.timeseries_price_slope_y = TrainingInput.linear_regression_slope(
-            timeseries_price_normalized[-10:])
+            timeseries_price_normalized[indices[1][0]:indices[1][1]])
         self.timeseries_volume_x = [
             (volume -
              volume_mean) /
-            volume_std for volume in timeseries_volume[-40:-10]]  # normalizes volume (z-score)
+            volume_std for volume in timeseries_volume[indices[0][0]:indices[0][1]]]  # normalizes volume (z-score)
 
     def get_serialized_input(self):
         input_state = np.zeros((4, 30,))
@@ -86,7 +92,8 @@ class TrainingInput:
         # input_state[2] = np.array(self.timeseries_volume_x)
         # input_state[3] = np.concatenate(
             # (np.array([self.low_volume, self.high_volume]), np.zeros(28)))
-
+        if not self.is_training:
+            input_state = np.expand_dims(input_state, 0)
         return input_state
 
     '''
@@ -107,9 +114,15 @@ class TrainingInput:
         return self.timeseries_volume
 
     @staticmethod
-    def map(output):
+    def map(output, is_training):
+        if is_training: # since ground truth exists
+            mapped_output = output
+        else:
+            mapped_output = np.zeros((3,))
+            mapped_output[np.argmax(mapped_output)] = 1
+            mapped_output = mapped_output.tolist()
         return {
-            "[1, 0, 0]": "buy",
-            "[0, 1, 0]": "neutral",
-            "[0, 0, 1]": "sell"}[
-            str(output)]
+            (1, 0, 0): "buy",
+            (0, 1, 0): "neutral",
+            (0, 0, 1): "sell"} [tuple(mapped_output)]
+
