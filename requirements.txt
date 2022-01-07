@@ -15,6 +15,6 @@ urllib3==1.26.5
 websocket-client==0.57.0
 websockets==8.1
 yfinance==0.1.55
-nltk==3.5
+nltk==3.6.6
 newsapi-python==0.2.6
 
