@@ -1,7 +1,7 @@
 alpaca-trade-api==0.53.0
 beautifulsoup4==4.9.3
 bs4==0.0.1
-certifi==2020.12.5
+certifi==2022.12.7
 chardet==4.0.0
 idna==2.10
 numpy==1.20.1
