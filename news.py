@@ -1,12 +1,13 @@
+import time
+import logging
+import re
+from datetime import datetime, timedelta
 from newsapi import NewsApiClient
 import finnhub
+import feedparser
 import credentials as cred
 import stock_data_gatherer as sdg
-import re
 import util
-import scraper
-from datetime import datetime, timedelta
-import time
 
 class NewsGetter:
     def __init__(self):
@@ -16,6 +17,10 @@ class NewsGetter:
         self.finnhub_requests = 0
         self.last_newsapi_reset = datetime.now()
         self.last_finnhub_reset = datetime.now()
+        self.rss_feeds = [
+            "https://feeds.a.dj.com/rss/RSSMarketsMain.xml",  # WSJ Markets
+            "https://feeds.marketwatch.com/marketwatch/topstories/"  # MarketWatch Top Stories
+        ]
 
     def reset_request_counts(self):
         current_time = datetime.now()
@@ -28,7 +33,7 @@ class NewsGetter:
 
     def get_news_from_newsapi(self, stock):
         if self.newsapi_requests >= 50:
-            print(f"Reached NewsAPI limit for {stock}")
+            logging.warning(f"Reached NewsAPI limit for {stock}")
             return []
 
         company_name = re.sub(r'[^\w\s]', '', sdg.get_stock_company_name(stock))
@@ -42,15 +47,15 @@ class NewsGetter:
 
         self.newsapi_requests += 1
 
-        news_descriptions = []
-        for news in articles:
-            if util.check_overlap(search_terms, news['description']):
-                news_descriptions.append(news['description'])
-        return news_descriptions
+        return [
+            news['description']
+            for news in articles
+            if util.check_overlap(search_terms, news['description'])
+        ]
 
     def get_news_from_finnhub(self, stock):
-        if self.finnhub_requests >= 50:
-            print(f"Reached Finnhub limit for {stock}")
+        if self.finnhub_requests >= 70:
+            logging.warning(f"Reached Finnhub limit for {stock}")
             return []
 
         company_name = re.sub(r'[^\w\s]', '', sdg.get_stock_company_name(stock))
@@ -58,23 +63,43 @@ class NewsGetter:
 
         self.finnhub_requests += 1
 
-        news_descriptions = []
-        for news in articles:
-            if util.check_overlap(company_name, news['summary']):
-                news_descriptions.append(news['summary'])
-        return news_descriptions
+        return [
+            news['summary']
+            for news in articles
+            if util.check_overlap(company_name, news['summary'])
+        ]
+
+    def fetch_rss_feed(self, url):
+        try:
+            return feedparser.parse(url)
+        except Exception as e:
+            logging.error(f"Error fetching RSS feed {url}: {e}")
+            return None
+
+    def parse_feed(self, feed):
+        articles = []
+        if 'entries' in feed:
+            for entry in feed['entries']:
+                article = {
+                    'title': entry.get('title', 'No Title'),
+                    'link': entry.get('link', 'No Link'),
+                    'summary': entry.get('summary', 'No Summary')
+                }
+                articles.append(article)
+        return articles
+
+    def fetch_and_parse_all_feeds(self):
+        all_articles = []
+        for url in self.rss_feeds:
+            if feed := self.fetch_rss_feed(url):
+                articles = self.parse_feed(feed)
+                all_articles.extend(articles)
+            time.sleep(1)  # Add sleep to respect rate limits
+        return all_articles
 
     def get_news(self, stock):
-        current_hour = datetime.now().hour
-        if 18 <= current_hour or current_hour < 3:
-            # Limit requests between 6 PM and 3 AM
-            time.sleep(3600)  # Sleep for an hour
-            return self.get_news_from_newsapi(stock) + self.get_news_from_finnhub(stock)
-        else:
-            self.reset_request_counts()
-            newsapi_news = self.get_news_from_newsapi(stock)
-            finnhub_news = self.get_news_from_finnhub(stock)
-            return newsapi_news + finnhub_news
-
-
- 
+        self.reset_request_counts()
+        newsapi_news = self.get_news_from_newsapi(stock)
+        finnhub_news = self.get_news_from_finnhub(stock)
+        rss_news = self.fetch_and_parse_all_feeds()
+        return newsapi_news + finnhub_news + [article['summary'] for article in rss_news]

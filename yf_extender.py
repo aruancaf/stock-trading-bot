@@ -2,6 +2,7 @@ import sys
 from datetime import datetime
 import yfinance as yf
 import util
+import logging
 
 def get_ticker_symbol(ticker: yf.Ticker) -> str:
     try:
@@ -9,43 +10,57 @@ def get_ticker_symbol(ticker: yf.Ticker) -> str:
     except ImportError:
         return ""
 
-def get_stock_state(ticker: yf.Ticker) -> dict:
-    stock_info = ticker.history(period="1d").iloc[0].to_dict()
+def previous_high(ticker_symbol: str, time_period: str) -> float:
+    ticker = yf.Ticker(ticker_symbol)
+    stock_history = ticker.history(period=time_period)
+    
+    if stock_history.empty:
+        logging.warning(f"No data available for ticker {ticker_symbol}")
+        return None
+    
+    return stock_history['High'].max()
+
+def get_stock_state(ticker_symbol: str) -> dict:
+    ticker = yf.Ticker(ticker_symbol)
+    history = ticker.history(period="1d")
+    
+    if history.empty:
+        logging.warning(f"No data available for ticker {ticker_symbol}")
+        return None
+
+    stock_info = history.iloc[0].to_dict()
     stock_info['Time'] = datetime.now().strftime("%H:%M:%S")
     del stock_info['Dividends']
     del stock_info['Stock Splits']
+    
     return stock_info
-
-# Valid periods: 1d, 5d, 1mo, 3mo, 6mo, 1y, 2y, 5y, 10y, ytd, max
-def previous_high(ticker: yf.Ticker, time_period: str) -> float:
-    high = 0
-    stock_history = ticker.history(period=time_period)
-    for i in range(len(stock_history) - 2):
-        temp_high = stock_history.iloc[i]['High']
-        if temp_high > high:
-            high = temp_high
-    return high
 
 # Valid periods: 1d, 5d, 1mo, 3mo, 6mo, 1y, 2y, 5y, 10y, ytd, max
 def calculate_sma(ticker: yf.Ticker, time_period="1mo", interval="1d") -> float:
     stock_history = ticker.history(period=time_period, interval=interval)
     summation = sum(stock_history['Close'])
     time_period_days = len(stock_history)
-    if time_period_days > 0:
-        return summation / time_period_days
-    return sys.maxsize
+    return summation / time_period_days if time_period_days > 0 else sys.maxsize
 
 # Valid periods: 1d, 5d, 1mo, 3mo, 6mo, 1y, 2y, 5y, 10y, ytd, max
 def calculate_ema(ticker: yf.Ticker, time_period="1mo") -> float:
     stock_history = ticker.history(period=time_period)
-    ema = stock_history['Close'].ewm(span=len(stock_history), adjust=False).mean().iloc[-1]
-    return ema
+    return (
+        stock_history['Close']
+        .ewm(span=len(stock_history), adjust=False)
+        .mean()
+        .iloc[-1]
+    )
 
 # Valid periods: 1d, 5d, 1mo, 3mo, 6mo, 1y, 2y, 5y, 10y, ytd, max
 def calculate_previous_ema(ticker: yf.Ticker, time_period="1mo", days_previous=1) -> float:
     stock_history = ticker.history(period=time_period)
-    ema = stock_history['Close'].ewm(span=len(stock_history), adjust=False).mean().iloc[-days_previous - 1]
-    return ema
+    return (
+        stock_history['Close']
+        .ewm(span=len(stock_history), adjust=False)
+        .mean()
+        .iloc[-days_previous - 1]
+    )
 
 def get_high2current_price_change_percent(ticker: yf.Ticker) -> float:
     stock_info = ticker.history(period="1d").iloc[0].to_dict()
@@ -82,15 +97,13 @@ def get_price_slope(ticker_symbol: str):
     n = 5
     historical_stock_data = get_historical_data(ticker_symbol, '1d', '1m')
     stock_price_by_time = [historical_stock_data.iloc[i]['Close'] for i in range(-n, 0)]
-    slope = util.linear_regress_slope(range(n), stock_price_by_time)
-    return slope
+    return util.linear_regress_slope(range(n), stock_price_by_time)
 
 def get_volume_slope(ticker_symbol: str):
     n = 5
     historical_stock_data = get_historical_data(ticker_symbol, '1d', '1m')
     stock_volume_by_time = [historical_stock_data.iloc[i]['Volume'] for i in range(-n, 0)]
-    slope = util.linear_regress_slope(range(n), stock_volume_by_time)
-    return slope
+    return util.linear_regress_slope(range(n), stock_volume_by_time)
 
 def get_stock_company_name(ticker_symbol: str):
     return yf.Ticker(ticker_symbol).info['longName']
