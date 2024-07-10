@@ -7,13 +7,17 @@ import trading_constants
 import utils.json_simplifier as json_simp
 import yf_extender as yf_ext
 from utils import alerts
-from credentials import ALPACA_API_KEY, ALPACA_SECRET_KEY
+
+# Directly set the Alpaca API keys here
+ALPACA_API_KEY = "PKH65BIUK3JXOKTG9FFP"
+ALPACA_SECRET_KEY = "09tdgkypsnIoKGCQULcJKvx9g9qZFurtXvaHlBH3"
+ALPACA_BASE_URL = "https://paper-api.alpaca.markets/v2"
 
 # Alpaca Dashboard: https://app.alpaca.markets/paper/dashboard/overview
 
 def initializeApAccount():
     global api
-    api = tradeapi.REST(ALPACA_API_KEY, ALPACA_SECRET_KEY, base_url="https://paper-api.alpaca.markets/v2")
+    api = tradeapi.REST(ALPACA_API_KEY, ALPACA_SECRET_KEY, base_url=ALPACA_BASE_URL)
 
 purchased = {}
 sold = {}
@@ -41,7 +45,11 @@ def buy_stock(ticker_symbol: str, quantity: int):
             )
             stock_info['Quantity'] = quantity
             purchased[ticker_symbol] = stock_info
-            console_output = "Buying " + ticker_symbol + " Quantity: {0}".format(stock_info['Quantity']) + "\n"
+            console_output = (
+                f"Buying {ticker_symbol}"
+                + " Quantity: {0}".format(stock_info['Quantity'])
+                + "\n"
+            )
             print(console_output, end=' ')
             buying_power -= (quantity * yf_ext.get_stock_state(ticker)['Close'])
             alerts.say_beep(1)
@@ -63,27 +71,32 @@ def sell_stock(ticker_symbol: str):
     ticker = yf.Ticker(ticker_symbol)
     stock_info = Counter(yf_ext.get_stock_state(ticker))
     purchased_copy = dict(purchased)
-    console_output = "Selling " + ticker_symbol + " Quantity: {0}".format(stock_info['Quantity']) + "\n"
+    console_output = (
+        f"Selling {ticker_symbol}"
+        + " Quantity: {0}".format(stock_info['Quantity'])
+        + "\n"
+    )
 
     if ticker_symbol not in sold_copy and ticker_symbol != "":
         purchase_info = Counter(purchased.pop(ticker_symbol))
-        console_output = "Selling " + ticker_symbol + " Quantity: {0}".format(purchase_info['Quantity']) + "\n"
+        console_output = (
+            f"Selling {ticker_symbol}"
+            + " Quantity: {0}".format(purchase_info['Quantity'])
+            + "\n"
+        )
         stock_info.pop('Time')
         purchase_info.pop('Time')
         stock_info.subtract(purchase_info)
-        stock_info['Time'] = datetime.now().strftime("%H:%M:%S")
-        sold[ticker_symbol] = stock_info
-        buying_power += stock_info['Close'] * abs(stock_info['Quantity'])
-        transaction_history.append({
-            "type": "sell",
-            "symbol": ticker_symbol,
-            "quantity": purchase_info['Quantity'],
-            "price": stock_info['Close'],
-            "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        })
+        _extracted_from_sell_stock_25(
+            stock_info, ticker_symbol, buying_power, purchase_info
+        )
     elif ticker_symbol in purchased_copy:
         purchase_info = Counter(purchased.pop(ticker_symbol))
-        console_output = "Selling " + ticker_symbol + " Quantity: {0}".format(purchase_info['Quantity']) + "\n"
+        console_output = (
+            f"Selling {ticker_symbol}"
+            + " Quantity: {0}".format(purchase_info['Quantity'])
+            + "\n"
+        )
         sold_info = Counter(sold.pop(ticker_symbol))
         stock_info.pop('Time')
         purchase_info.pop('Time')
@@ -92,22 +105,27 @@ def sell_stock(ticker_symbol: str):
 
         for I in stock_info and sold_info:
             stock_info[I] = stock_info[I] + sold_info[I]
-        stock_info['Time'] = datetime.now().strftime("%H:%M:%S")
-        sold[ticker_symbol] = stock_info
-        buying_power += stock_info['Close'] * abs(stock_info['Quantity'])
-        transaction_history.append({
-            "type": "sell",
-            "symbol": ticker_symbol,
-            "quantity": purchase_info['Quantity'],
-            "price": stock_info['Close'],
-            "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        })
-
+        _extracted_from_sell_stock_25(
+            stock_info, ticker_symbol, buying_power, purchase_info
+        )
     json_simp.updated_purchased()
     json_simp.updated_sold()
     json_simp.read_json()
     print(console_output, end=' ')
     alerts.say_beep(2)
+
+# TODO Rename this here and in `sell_stock`
+def _extracted_from_sell_stock_25(stock_info, ticker_symbol, buying_power, purchase_info):
+    stock_info['Time'] = datetime.now().strftime("%H:%M:%S")
+    sold[ticker_symbol] = stock_info
+    buying_power += stock_info['Close'] * abs(stock_info['Quantity'])
+    transaction_history.append({
+        "type": "sell",
+        "symbol": ticker_symbol,
+        "quantity": purchase_info['Quantity'],
+        "price": stock_info['Close'],
+        "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    })
 
 def refresh_account_balance():
     with lock:
@@ -165,3 +183,6 @@ def add_alert(symbol, alert_message, date):
         "alert": alert_message,
         "date": date
     })
+
+# Initialize Alpaca Account
+initializeApAccount()

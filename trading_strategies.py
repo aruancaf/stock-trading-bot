@@ -31,13 +31,13 @@ def trend_following(ticker_symbol: str):
     if stock_info is None:
         return 0  # Or handle the case where stock_info is None in another appropriate way
 
-    previous_2mo_high = yf_extender.previous_high(ticker_symbol, "2mo")
+    previous_3mo_high = yf_extender.previous_high(ticker_symbol, "3mo")
     
-    if previous_2mo_high is None or stock_info['Close'] is None:
+    if previous_3mo_high is None or stock_info['Close'] is None:
         logging.warning(f"Previous high or current close price is None for ticker {ticker_symbol}")
         return 0
     
-    if previous_2mo_high < stock_info['Close'] and yf_extender.get_high2current_price_change_percent(ticker_symbol) > -0.0025:
+    if previous_3mo_high < stock_info['Close'] and yf_extender.get_high2current_price_change_percent(ticker_symbol) > -0.0025:
         return 0.2
     
     return 0.0

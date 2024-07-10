@@ -18,6 +18,73 @@ def get_historical_data(ticker_symbol: str, time_period: str = '1mo', time_inter
     """
     ticker = yf.Ticker(ticker_symbol)
     return ticker.history(period=time_period, interval=time_interval)
+def calculate_ema(data: pd.DataFrame, period: int = 20) -> float:
+    ema = data['Close'].ewm(span=period, adjust=False).mean()
+    return ema.iloc[-1]
+
+def calculate_moving_average(data: pd.DataFrame, period: int = 50) -> float:
+    sma = data['Close'].rolling(window=period).mean()
+    return sma.iloc[-1]
+
+def calculate_volume(data: pd.DataFrame) -> float:
+    return data['Volume'].iloc[-1]
+
+def calculate_trix(data: pd.DataFrame, period: int = 15) -> float:
+    ema1 = data['Close'].ewm(span=period, adjust=False).mean()
+    ema2 = ema1.ewm(span=period, adjust=False).mean()
+    ema3 = ema2.ewm(span=period, adjust=False).mean()
+    trix = 100 * (ema3.diff() / ema3.shift(1))
+    return trix.iloc[-1]
+
+def calculate_aroon(data: pd.DataFrame, period: int = 25) -> float:
+    aroon_up = ((period - data['High'].rolling(window=period).apply(lambda x: x.argmax(), raw=True)) / period) * 100
+    aroon_down = ((period - data['Low'].rolling(window=period).apply(lambda x: x.argmin(), raw=True)) / period) * 100
+    return aroon_up.iloc[-1] - aroon_down.iloc[-1]
+
+def calculate_elder_ray(data: pd.DataFrame, period: int = 13) -> float:
+    bull_power = data['High'] - data['Close'].ewm(span=period, adjust=False).mean()
+    bear_power = data['Low'] - data['Close'].ewm(span=period, adjust=False).mean()
+    return bull_power.iloc[-1] - bear_power.iloc[-1]
+
+def calculate_heikin_ashi(data: pd.DataFrame) -> float:
+    ha_close = (data['Open'] + data['High'] + data['Low'] + data['Close']) / 4
+    return ha_close.iloc[-1]
+
+def calculate_rapid_rebound(data: pd.DataFrame, period: int = 14) -> float:
+    rsi = calculate_rsi(data, period)
+    return rsi.iloc[-1]
+
+def calculate_parabolic_sar(data: pd.DataFrame, af: float = 0.02, max_af: float = 0.2) -> float:
+    psar = data['Close'].copy()
+    psar_high = data['High'].copy()
+    psar_low = data['Low'].copy()
+    bull = True
+    psar.iloc[0] = data['Close'].iloc[0]
+    ep = data['High'].iloc[0]
+    af_value = af
+
+    for i in range(1, len(data)):
+        psar.iloc[i] = psar.iloc[i - 1] + af_value * (ep - psar.iloc[i - 1])
+        if bull:
+            if data['Low'].iloc[i] < psar.iloc[i]:
+                bull = False
+                psar.iloc[i] = ep
+                ep = data['Low'].iloc[i]
+                af_value = af
+            elif data['High'].iloc[i] > ep:
+                ep = data['High'].iloc[i]
+                af_value = min(af_value + af, max_af)
+        else:
+            if data['High'].iloc[i] > psar.iloc[i]:
+                bull = True
+                psar.iloc[i] = ep
+                ep = data['High'].iloc[i]
+                af_value = af
+            elif data['Low'].iloc[i] < ep:
+                ep = data['Low'].iloc[i]
+                af_value = min(af_value + af, max_af)
+
+    return psar.iloc[-1]
 def calculate_parabolic_sar(data: pd.DataFrame, af_start: float = 0.02, af_increment: float = 0.02, af_max: float = 0.2) -> pd.Series:
     """
     Calculate the Parabolic SAR for a given DataFrame with OHLC data.
@@ -63,9 +130,14 @@ def calculate_parabolic_sar(data: pd.DataFrame, af_start: float = 0.02, af_incre
                 af = min(af + af_increment, af_max)
 
     return psar
+
 def calculate_sma(data: pd.DataFrame, period: int = 20) -> Tuple[float, float]:
     sma = data['Close'].rolling(window=period).mean()
     return sma.iloc[-1], sma.iloc[-2]
+
+def calculate_moving_average(data: pd.DataFrame, period: int = 50) -> float:
+    sma = data['Close'].rolling(window=period).mean()
+    return sma.iloc[-1]
 
 def calculate_ema(data: pd.DataFrame, period: int = 20) -> float:
     ema = data['Close'].ewm(span=period, adjust=False).mean()

@@ -11,7 +11,7 @@ app = flask.Flask(__name__)
 def init_web():
     """Initialize and run the Flask web server."""
     app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
-    app.run(host='0.0.0.0', port=5000, debug=False, use_reloader=False)
+    app.run(host='0.0.0.0', port=5001, debug=False, use_reloader=False)
     sys.stdout.flush()
 
 @app.route('/portfolio', methods=['GET'])

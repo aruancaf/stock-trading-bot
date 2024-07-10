@@ -22,10 +22,7 @@ def active_stocks():
             logging.error("Failed to find the 'results' div in the page")
             return []
 
-        tickers = []
-        for result in results.find_all('a'):
-            tickers.append(result.text.strip())
-        
+        tickers = [result.text.strip() for result in results.find_all('a')]
         logging.info(f"Scraped tickers: {tickers}")
         return tickers
 

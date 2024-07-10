@@ -74,8 +74,8 @@ def get_historical_data(ticker_symbol: str, time_period: str, time_interval: str
     return yf.Ticker(ticker_symbol).history(period=time_period, interval=time_interval)
 
 def get_current_stock_data(ticker_symbol: str) -> dict:
-    historical_stock_data = get_historical_data(ticker_symbol, '3d', '2m')
-    stock_data = historical_stock_data.iloc[-1].to_dict()
+    historical_stock_data = get_historical_data(ticker_symbol, '1d', '3m')
+    stock_data = historical_stock_data.iloc[0].to_dict()
     
     stock_data['SMA'] = calculate_sma(yf.Ticker(ticker_symbol))
     stock_data['PREVSMA'] = calculate_sma(yf.Ticker(ticker_symbol), time_period="1mo", interval="1d")
