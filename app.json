@@ -1,0 +1,34 @@
+{
+    "name": "stock-trading-bot",
+    "scripts": {
+      "test": "pytest"
+    },
+    "env": {
+      "FLASK_ENV": {
+        "required": true
+      },
+      "DATABASE_URL": {
+        "required": true
+      },
+      "ALPACA_API_KEY": {
+        "required": true
+      },
+      "ALPACA_SECRET_KEY": {
+        "required": true
+      }
+    },
+    "addons": [
+      "heroku-postgresql"
+    ],
+    "formation": {
+      "web": {
+        "quantity": 1,
+        "size": "standard-1X"
+      }
+    },
+    "buildpacks": [
+      {
+        "url": "heroku/python"
+      }
+    ]
+  }
