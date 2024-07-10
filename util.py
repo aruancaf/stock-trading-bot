@@ -1,19 +1,65 @@
 import math
-import pandas
+import pandas as pd 
 
 # param history : pd.DataFrame
 # Return format: [current_sma, previous_sma]
-def calculate_sma(history) -> []:
+from typing import List
+
+def calculate_sma(history) -> List[float]:
     summation = 0
     for row in history.iterrows():
         summation += row[1]['Close']
     return [summation/len(history.index), (summation - history.iloc[-2]['Close'])/(len(history.index)-1)]
+def calculate_sma(data: pd.DataFrame, period: int = 20):
+    sma = data['Close'].rolling(window=period).mean()
+    return sma.iloc[-1], sma.iloc[-2]
 
+def calculate_ema(data: pd.DataFrame, period: int = 20):
+    ema = data['Close'].ewm(span=period, adjust=False).mean()
+    return ema.iloc[-1]
+
+def calculate_previous_ema(data: pd.DataFrame, period: int = 20):
+    ema = data['Close'].ewm(span=period, adjust=False).mean()
+    return ema.iloc[-2]
+
+def calculate_trix(data: pd.DataFrame, period: int = 15):
+    trix = data['Close'].ewm(span=period, adjust=False).mean()
+    trix_diff = trix.diff()
+    trix_signal = (trix_diff / trix.shift()) * 100
+    return trix_signal.iloc[-1], trix_signal.iloc[-2]
+
+def calculate_aroon(data: pd.DataFrame, period: int = 25):
+    aroon_up = data['High'].rolling(window=period).apply(lambda x: (x.argmax() + 1) * 100 / period, raw=True)
+    aroon_down = data['Low'].rolling(window=period).apply(lambda x: (x.argmin() + 1) * 100 / period, raw=True)
+    return aroon_up.iloc[-1], aroon_down.iloc[-1]
+
+def calculate_elder_ray(data: pd.DataFrame):
+    bull_power = data['High'] - data['Close'].ewm(span=13, adjust=False).mean()
+    bear_power = data['Low'] - data['Close'].ewm(span=13, adjust=False).mean()
+    return bull_power.iloc[-1], bear_power.iloc[-1]
 # param history : pd.DataFrame
 def calculate_ema(history) -> int:
     sma = calculate_sma(history)
     weighted_multiplier = 2 / (len(history.index) + 1)
     return history.iloc[-1]['Close']  * weighted_multiplier + sma[1] * (1 - weighted_multiplier)
+
+def calculate_rsi(data: pd.DataFrame, period: int = 14) -> float:
+    delta = data['Close'].diff()
+    gain = (delta.where(delta > 0, 0)).rolling(window=period).mean()
+    loss = (-delta.where(delta < 0, 0)).rolling(window=period).mean()
+    rs = gain / loss
+    rsi = 100 - (100 / (1 + rs))
+    return rsi.iloc[-1]
+
+def calculate_price_drop(data: pd.DataFrame, threshold: float) -> bool:
+    return data['Open'].iloc[-1] < (1 - threshold) * data['Close'].iloc[-2]
+
+def calculate_volume_spike(data: pd.DataFrame, spike_threshold: float) -> bool:
+    return data['Volume'].iloc[-1] > spike_threshold * data['Volume'].iloc[-2]
+
+def calculate_heikin_ashi(data: pd.DataFrame) -> float:
+    heikin_ashi_close = (data['Open'] + data['High'] + data['Low'] + data['Close']) / 4
+    return heikin_ashi_close.iloc[-1]
 
 def partition_array(array, number_of_partitions):
     partition_size = math.ceil(len(array)/number_of_partitions)

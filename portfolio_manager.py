@@ -1,32 +1,27 @@
 import threading
 from collections import Counter
 from datetime import datetime
-
 import alpaca_trade_api as tradeapi
 import yfinance as yf
-
 import trading_constants
 import utils.json_simplifier as json_simp
 import yf_extender as yf_ext
 from utils import alerts
-import API_KEYS
-
+from credentials import ALPACA_API_KEY, ALPACA_SECRET_KEY
 
 # Alpaca Dashboard: https://app.alpaca.markets/paper/dashboard/overview
 
-
 def initializeApAccount():
     global api
-    api = tradeapi.REST(API_KEYS.TRADE_API_KEY_ID, API_KEYS.TRADE_API_SECRET_KEY,
-                        base_url="https://paper-api.alpaca.markets")
-
+    api = tradeapi.REST(ALPACA_API_KEY, ALPACA_SECRET_KEY, base_url="https://paper-api.alpaca.markets/v2")
 
 purchased = {}
 sold = {}
 buying_power = trading_constants.starting_account_value
 account_value = trading_constants.starting_account_value
+transaction_history = []
+alerts_list = []
 lock = threading.Lock()
-
 
 def buy_stock(ticker_symbol: str, quantity: int):
     with lock:
@@ -50,10 +45,15 @@ def buy_stock(ticker_symbol: str, quantity: int):
             print(console_output, end=' ')
             buying_power -= (quantity * yf_ext.get_stock_state(ticker)['Close'])
             alerts.say_beep(1)
-
+            transaction_history.append({
+                "type": "buy",
+                "symbol": ticker_symbol,
+                "quantity": quantity,
+                "price": stock_info['Close'],
+                "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            })
         json_simp.updated_purchased()
         json_simp.read_json()
-
 
 def sell_stock(ticker_symbol: str):
     api.close_position(ticker_symbol)
@@ -74,7 +74,13 @@ def sell_stock(ticker_symbol: str):
         stock_info['Time'] = datetime.now().strftime("%H:%M:%S")
         sold[ticker_symbol] = stock_info
         buying_power += stock_info['Close'] * abs(stock_info['Quantity'])
-
+        transaction_history.append({
+            "type": "sell",
+            "symbol": ticker_symbol,
+            "quantity": purchase_info['Quantity'],
+            "price": stock_info['Close'],
+            "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        })
     elif ticker_symbol in purchased_copy:
         purchase_info = Counter(purchased.pop(ticker_symbol))
         console_output = "Selling " + ticker_symbol + " Quantity: {0}".format(purchase_info['Quantity']) + "\n"
@@ -84,18 +90,24 @@ def sell_stock(ticker_symbol: str):
         sold_info.pop('Time')
         stock_info.subtract(purchase_info)
 
-        for i in stock_info and sold_info:
-            stock_info[i] = stock_info[i] + sold_info[i]
+        for I in stock_info and sold_info:
+            stock_info[I] = stock_info[I] + sold_info[I]
         stock_info['Time'] = datetime.now().strftime("%H:%M:%S")
         sold[ticker_symbol] = stock_info
         buying_power += stock_info['Close'] * abs(stock_info['Quantity'])
+        transaction_history.append({
+            "type": "sell",
+            "symbol": ticker_symbol,
+            "quantity": purchase_info['Quantity'],
+            "price": stock_info['Close'],
+            "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        })
 
     json_simp.updated_purchased()
     json_simp.updated_sold()
     json_simp.read_json()
     print(console_output, end=' ')
     alerts.say_beep(2)
-
 
 def refresh_account_balance():
     with lock:
@@ -120,8 +132,36 @@ def refresh_account_balance():
             buying_power += temp
             account_value += temp
 
-
 def print_account_status():
     refresh_account_balance()
     print("Buying Power {0}".format((buying_power * 1000) / 1000))
     print("Account Value {0}".format((account_value * 1000) / 1000))
+
+def calculate_total_value(purchased):
+    return sum(stock['Close'] * stock['Quantity'] for stock in purchased.values())
+
+def calculate_total_invested(purchased):
+    return sum(stock['Close'] * stock['Quantity'] for stock in purchased.values())
+
+def calculate_current_balance(purchased):
+    total_value = calculate_total_value(purchased)
+    total_invested = calculate_total_invested(purchased)
+    return total_value - total_invested
+
+def calculate_profit_loss(purchased):
+    total_value = calculate_total_value(purchased)
+    total_invested = calculate_total_invested(purchased)
+    return total_value - total_invested
+
+def get_transaction_history():
+    return transaction_history
+
+def get_alerts():
+    return alerts_list
+
+def add_alert(symbol, alert_message, date):
+    alerts_list.append({
+        "symbol": symbol,
+        "alert": alert_message,
+        "date": date
+    })

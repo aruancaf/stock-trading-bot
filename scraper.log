@@ -1,0 +1,59 @@
+2024-07-09 23:00:45,790 - INFO - Starting the trading bot
+2024-07-09 23:00:46,373 - INFO - Currently Purchased: {'AAPL': ('day_trade', 215.66)}
+2024-07-09 23:00:46,374 - INFO - New Iteration of Stock Scanning
+2024-07-09 23:00:46,504 - INFO - Market Close
+2024-07-09 23:00:46,540 - INFO - Starting Backtester
+2024-07-09 23:00:46,929 - ERROR - Failed to fetch data, status code: 500
+2024-07-09 23:01:51,911 - INFO - Starting the trading bot
+2024-07-09 23:01:52,248 - INFO - Currently Purchased: {'AAPL': ('day_trade', 215.66)}
+2024-07-09 23:01:52,248 - INFO - New Iteration of Stock Scanning
+2024-07-09 23:01:52,422 - INFO - Market Close
+2024-07-09 23:01:52,459 - INFO - Starting Backtester
+2024-07-09 23:01:52,738 - ERROR - Failed to fetch data, status code: 500
+2024-07-09 23:02:36,045 - INFO - Starting the trading bot
+2024-07-09 23:02:36,462 - INFO - Currently Purchased: {'AAPL': ('day_trade', 215.66)}
+2024-07-09 23:02:36,463 - INFO - New Iteration of Stock Scanning
+2024-07-09 23:02:36,638 - INFO - Market Close
+2024-07-09 23:02:36,675 - INFO - Starting Backtester
+2024-07-09 23:02:37,299 - ERROR - Failed to fetch data, status code: 500
+2024-07-09 23:42:14,325 - INFO - Starting the trading bot
+2024-07-09 23:42:14,807 - INFO - Currently Purchased: {'AAPL': ('day_trade', 215.66)}
+2024-07-09 23:42:14,807 - INFO - New Iteration of Stock Scanning
+2024-07-09 23:42:14,938 - INFO - Market Close
+2024-07-09 23:42:14,964 - INFO - Starting Backtester
+2024-07-09 23:42:15,692 - ERROR - Failed to fetch data, status code: 500
+2024-07-09 23:55:13,234 - INFO - Starting the trading bot
+2024-07-09 23:55:13,596 - INFO - Currently Purchased: {'AAPL': ('day_trade', 215.66)}
+2024-07-09 23:55:13,596 - INFO - New Iteration of Stock Scanning
+2024-07-09 23:55:13,706 - INFO - Market Close
+2024-07-09 23:55:13,713 - INFO - Starting Backtester
+2024-07-09 23:55:14,054 - ERROR - Failed to fetch data, status code: 500
+2024-07-10 00:07:41,181 - INFO - Starting backtest
+2024-07-10 00:12:12,691 - INFO - Starting backtest
+2024-07-10 00:12:12,692 - INFO - Starting backtest
+2024-07-10 00:12:13,038 - ERROR - Failed to fetch data, status code: 500
+2024-07-10 00:12:13,039 - INFO - Running strategy: moving_average_checker
+2024-07-10 00:16:53,959 - INFO - Starting backtest from 2019-01-01 to 2023-12-31
+2024-07-10 00:16:54,258 - ERROR - Failed to fetch data, status code: 500
+2024-07-10 00:16:54,258 - INFO - Completed backtest
+2024-07-10 00:17:25,439 - INFO - Starting backtest from 2019-01-01 to 2023-12-31
+2024-07-10 00:17:25,758 - ERROR - Failed to fetch data, status code: 500
+2024-07-10 00:17:25,759 - INFO - Completed backtest
+2024-07-10 00:17:35,348 - INFO - Starting the trading bot
+2024-07-10 00:17:35,766 - INFO - Currently Purchased: {'AAPL': ('day_trade', 215.66)}
+2024-07-10 00:17:35,766 - INFO - New Iteration of Stock Scanning
+2024-07-10 00:17:35,877 - INFO - Market Close
+2024-07-10 00:17:35,916 - INFO - Starting Backtester
+2024-07-10 00:17:36,186 - ERROR - Failed to fetch data, status code: 500
+2024-07-10 00:18:13,191 - INFO - Starting the trading bot
+2024-07-10 00:18:13,558 - INFO - Currently Purchased: {'AAPL': ('day_trade', 215.66)}
+2024-07-10 00:18:13,558 - INFO - New Iteration of Stock Scanning
+2024-07-10 00:18:13,725 - INFO - Market Close
+2024-07-10 00:18:13,763 - INFO - Starting Backtester
+2024-07-10 00:18:14,064 - ERROR - Failed to fetch data, status code: 500
+2024-07-10 00:35:19,402 - INFO - Starting backtest from 2019-01-01 to 2023-12-31
+2024-07-10 00:35:19,955 - ERROR - Failed to fetch data, status code: 500
+2024-07-10 00:35:19,955 - INFO - Completed backtest
+2024-07-10 00:35:42,324 - INFO - Starting backtest from 2019-01-01 to 2023-12-31
+2024-07-10 00:35:42,625 - ERROR - Failed to fetch data, status code: 500
+2024-07-10 00:35:42,626 - INFO - Completed backtest

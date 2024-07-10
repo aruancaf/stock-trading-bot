@@ -1,0 +1,5 @@
+2024-07-09 22:56:13,943 - INFO - Starting the trading bot
+2024-07-09 22:56:14,461 - INFO - Currently Purchased: {'AAPL': ('day_trade', 215.66)}
+2024-07-09 22:56:14,461 - INFO - New Iteration of Stock Scanning
+2024-07-09 22:56:14,577 - INFO - Market Close
+2024-07-09 22:56:14,615 - INFO - Starting Backtester

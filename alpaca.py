@@ -4,7 +4,7 @@ import credentials as cred
 
 class Alpaca:
     def __init__(self):
-        self.api = tradeapi.REST(cred.ALP_API_ID, cred.ALP_SECRET_KEY, base_url='https://paper-api.alpaca.markets')
+        self.api = tradeapi.REST(cred.ALPACA_API_KEY, cred.ALPACA_SECRET_KEY, base_url='https://paper-api.alpaca.markets')
         self.account  = self.api.get_account()
         self.api.list_positions()
         print("Account Status: ", self.account.status)

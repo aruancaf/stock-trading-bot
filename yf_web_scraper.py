@@ -12,11 +12,13 @@ headers = {
 }
 
 
-def get_active_tickers() -> []:
+from typing import List
+
+def get_active_tickers() -> List[str]:
     return scrape_trending_tickers() + scrape_screeners()
 
 
-def scrape_screeners() -> []:
+def scrape_screeners() -> List[str]:
     active_stocks = []
 
     yf_screener_urls = ["https://finance.yahoo.com/screener/predefined/most_actives?offset=0&count=100",
@@ -38,7 +40,9 @@ def scrape_screeners() -> []:
     return active_stocks
 
 
-def scrape_trending_tickers() -> []:
+from typing import List
+
+def scrape_trending_tickers() -> List[str]:
     yf_trending_ticker_urls = ["https://finance.yahoo.com/trending-tickers"]
 
     active_stocks = []
