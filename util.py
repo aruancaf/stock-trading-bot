@@ -135,7 +135,10 @@ def calculate_sma(data: pd.DataFrame, period: int = 20) -> Tuple[float, float]:
     sma = data['Close'].rolling(window=period).mean()
     return sma.iloc[-1], sma.iloc[-2]
 
-def calculate_moving_average(data: pd.DataFrame, period: int = 50) -> float:
+
+def calculate_moving_average(data: pd.DataFrame, period: int = 20) -> float:
+    if 'Close' not in data.columns:
+        raise ValueError("DataFrame must contain 'Close' column.")
     sma = data['Close'].rolling(window=period).mean()
     return sma.iloc[-1]
 
@@ -225,13 +228,13 @@ def linear_regress_slope(x_step, y_values):
         y_mean = sum(y_values)/len(y_values)
         x_summation_stdev = sum((i - x_mean)**2 for i in range(len(y_values)))
         y_summation_stdev = sum(
-            (y_values[i] - y_mean) ** 2 for i in range(len(y_values))
+            (y_values.iloc[i] - y_mean) ** 2 for i in range(len(y_values))
         )
         x_std = (x_summation_stdev/(len(y_values)-1))**0.5
         y_std = (y_summation_stdev/(len(y_values)-1))**0.5
 
         summation_temp = sum(
-            ((i - x_mean) / x_std) * ((y_values[i] - y_mean) / y_std)
+            ((i - x_mean) / x_std) * ((y_values.iloc[i] - y_mean) / y_std)
             for i in range(len(y_values))
         )
         correlation_coefficent = summation_temp/(len(y_values) - 1)
