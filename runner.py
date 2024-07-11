@@ -2,7 +2,7 @@ import threading
 import time
 from datetime import datetime
 import logging
-
+import news_classifier as nc
 from diskcache import Cache
 import constants as const
 from process_runner import run_backtests
