@@ -1,0 +1,31 @@
+Metadata-Version: 2.1
+Name: newsapi-python
+Version: 0.2.7
+Summary: An unofficial Python client for the News API
+Home-page: https://github.com/mattlisiv/newsapi-python
+Author: Matt Lisivick
+Author-email: lisivickmatt@gmail.com
+License: MIT
+Download-URL: https://github.com/mattlisiv/newsapi-python/archive/master.zip
+Keywords: newsapi,news
+Platform: UNKNOWN
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: Financial and Insurance Industry
+Classifier: Intended Audience :: Information Technology
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 2
+Classifier: Programming Language :: Python :: 2.6
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.3
+Classifier: Programming Language :: Python :: 3.4
+Classifier: Programming Language :: Python :: 3.5
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Requires-Dist: requests (<3.0.0)
+
+UNKNOWN
+
+

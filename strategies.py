@@ -1,9 +1,10 @@
 import pandas as pd
 import numpy as np
 
-
-#strategies.py
-def strategySmaCrossover(market, period, stratParams=[5,10]):
+# strategies.py
+def strategySmaCrossover(market, period, stratParams=None):
+    if stratParams is None:
+        stratParams = [5, 10]
     fastSMA = stratParams[0]
     slowSMA = stratParams[1]
     if market.sma(period - 2, slowSMA) == 0:
@@ -13,7 +14,6 @@ def strategySmaCrossover(market, period, stratParams=[5,10]):
             return "closelong"
         else:
             return 'no posittion'
-
     elif market.sma(period - 1, fastSMA) > market.sma(period - 1, slowSMA):  # uptrend
         if market.sma(period, fastSMA) < market.sma(period, slowSMA):  # uptrend reversal
             return "closeshort"
@@ -22,17 +22,18 @@ def strategySmaCrossover(market, period, stratParams=[5,10]):
     else:
         return 'no posittion'
 
-
-def meanReversionStrategy(market, period, stratParams=[20, 2]):
+def meanReversionStrategy(market, period, stratParams=None):
+    if stratParams is None:
+        stratParams = [20, 2]
     window = stratParams[0]
     threshold = stratParams[1]
-    
+
     if period < window:
         return 'no position'
-    
+
     moving_average = market.sma(period, window)
-    price = market.data[period]
-    
+    price = market.data.iloc[period]  # Use .iloc for position-based indexing
+
     if price < moving_average - threshold:  # Price is significantly below the moving average
         return 'buy'
     elif price > moving_average + threshold:  # Price is significantly above the moving average

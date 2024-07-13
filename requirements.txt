@@ -63,3 +63,4 @@ wh
 yarl
 yfinance
 openpyxl
+requests_html
