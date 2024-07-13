@@ -1,6 +1,6 @@
 import threading
 import time
-from datetime import datetime, timedelta
+from datetime import datetime
 import logging
 from diskcache import Cache
 import constants as const
@@ -14,7 +14,7 @@ import news
 from db_manager import dbHandler
 from dotenv import load_dotenv
 import os
-import backtrader as bt
+import data_middleman as dm
 
 # Load environment variables from .env file
 load_dotenv()
@@ -39,9 +39,10 @@ class StrategyRunner:
         }
 
     def execute(self, stocks):
+        conn = dm.connect_to_db()  # Ensure conn is defined
         for stock_ticker in stocks:
             try:
-                stock_info = sdg.get_current_stock_data(stock_ticker)
+                stock_info = dm.get_current_data(conn, stock_ticker)
                 stock_score = sum(
                     strategy(stock_info, stock_ticker)
                     for strategy_name, strategy in self.strategies.items()
@@ -49,14 +50,14 @@ class StrategyRunner:
                 if stock_score >= 0.5 and stock_ticker not in day_trading_positions:
                     alpaca.create_order(stock_ticker, 1)
                     with position_lock:
-                        day_trading_positions[stock_ticker] = stock_info['Close']
-                        active_positions_to_check[stock_ticker] = ('day_trade', stock_info['Close'])
+                        day_trading_positions[stock_ticker] = stock_info['close']
+                        active_positions_to_check[stock_ticker] = ('day_trade', stock_info['close'])
 
                     order_data = {
                         'ticker': stock_ticker,
                         'order_type': 'buy',
                         'quantity': 1,
-                        'price': stock_info['Close'],
+                        'price': stock_info['close'],
                         'order_status': 'filled',
                         'timestamp': datetime.now()
                     }
@@ -66,23 +67,26 @@ class StrategyRunner:
                     logging.info(f"Based on analysis, buying {stock_ticker}, Stock Score: {stock_score}")
             except Exception as e:
                 logging.error(f"Error in StrategyRunner execute: {e}")
+        conn.close()  # Close the connection after use
 
 def stock_position_analyzer(db_manager):
+    conn = dm.connect_to_db()  # Ensure conn is defined
     while True:
         with position_lock:
             for stock_ticker, (trade_type, purchase_price) in list(active_positions_to_check.items()):
-                threading.Thread(target=check_perform_sell, args=(stock_ticker, trade_type, purchase_price, db_manager)).start()
+                threading.Thread(target=check_perform_sell, args=(conn, stock_ticker, trade_type, purchase_price, db_manager)).start()
             active_positions_to_check.clear()
         time.sleep(const.ANALYSIS_INTERVAL)
+    conn.close()  # Close the connection after use
 
 def should_sell(current_price, purchase_price):
     return_price = (current_price - purchase_price) / purchase_price
     return 0.03 <= return_price <= 0.05
 
-def check_perform_sell(stock_ticker, trade_type, purchase_price, db_manager):
+def check_perform_sell(conn, stock_ticker, trade_type, purchase_price, db_manager):
     while True:
-        stock_info = sdg.get_current_stock_data(stock_ticker)
-        current_stock_price = stock_info['Close']
+        stock_info = dm.get_current_data(conn, stock_ticker)
+        current_stock_price = stock_info['close']
         price_change_percent = util.calculate_price_change(current_stock_price, purchase_price)
         logging.info(f"Checking {stock_ticker} Gains/Losses: {price_change_percent:.2%}, Price: ${current_stock_price:.2f}")
         if trade_type == 'day_trade':
@@ -134,22 +138,23 @@ def check_perform_sell(stock_ticker, trade_type, purchase_price, db_manager):
         time.sleep(const.ANALYSIS_INTERVAL)
 
 def news_stock_analyzer(stock_ticker, db_manager):
+    conn = dm.connect_to_db()  # Ensure conn is defined
     try:
-        stock_info = sdg.get_current_stock_data(stock_ticker)
+        stock_info = dm.get_current_data(conn, stock_ticker)
         stock_score = 0
         stock_score += nc.sentiment_analyzer(news.get_news(stock_ticker))
         logging.info(f"{stock_ticker} news score: {stock_score}")
         if stock_score >= 0.35 and stock_ticker not in long_term_positions:
             alpaca.create_order(stock_ticker, 1)
             with position_lock:
-                long_term_positions[stock_ticker] = stock_info['Close']
-                active_positions_to_check[stock_ticker] = ('long_term', stock_info['Close'])
+                long_term_positions[stock_ticker] = stock_info['close']
+                active_positions_to_check[stock_ticker] = ('long_term', stock_info['close'])
 
             order_data = {
                 'ticker': stock_ticker,
                 'order_type': 'buy',
                 'quantity': 1,
-                'price': stock_info['Close'],
+                'price': stock_info['close'],
                 'order_status': 'filled',
                 'timestamp': datetime.now()
             }
@@ -159,6 +164,7 @@ def news_stock_analyzer(stock_ticker, db_manager):
             logging.info(f"Based on News analysis, buying {stock_ticker}")
     except Exception as e:
         logging.error(f"News analysis not working for {stock_ticker}. Error: {e}")
+    conn.close()  # Close the connection after use
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
@@ -184,6 +190,7 @@ if __name__ == "__main__":
     long_term_positions = {}  # key is stock ticker, value is stock purchase price
     active_positions_to_check = {}
 
+    conn = dm.connect_to_db()  # Ensure conn is defined
     positions = alpaca.get_positions()
     with position_lock:
         active_positions_to_check = {
@@ -193,9 +200,10 @@ if __name__ == "__main__":
     logging.info(f"Currently Purchased: {active_positions_to_check}")
     first_time_run = True
 
-    ticker_symbols = const.STOCKS_TO_CHECK
-    valid_tickers = sdg.get_valid_tickers(ticker_symbols)
+    # Use the scrape_all_urls function to get the valid tickers
+    valid_tickers = scraper.scrape_all_urls()
 
+    # Store initial stock data in the database
     for ticker in valid_tickers:
         stock_data = sdg.get_current_stock_data(ticker)
         stock_data['price_slope'] = sdg.get_price_slope(ticker)
@@ -213,7 +221,7 @@ if __name__ == "__main__":
                     threading.Thread(target=stock_position_analyzer, args=(db_manager,)).start()
                     first_time_run = False
                 active_stocks = scraper.active_stocks()
-                partitioned_stocks = util.partition_array(active_stocks, const.STOCK_SCANNER_PARTITION_COUNT)
+                partitioned_stocks = list(util.partition_array(active_stocks, const.STOCK_SCANNER_PARTITION_COUNT))
                 for partition in partitioned_stocks:
                     threading.Thread(target=StrategyRunner(db_manager).execute, args=(partition,)).start()
             else:
@@ -226,7 +234,7 @@ if __name__ == "__main__":
                     time.sleep(3600)  # Wait for an hour before running again
                     current_time = datetime.now().strftime("%H:%M")
 
-                       # Execute the news analyzer for both constant stocks and active stocks from the scraper module
+            # Execute the news analyzer for both constant stocks and active stocks from the scraper module
             for stock_ticker in const.STOCKS_TO_CHECK + scraper.active_stocks():
                 threading.Thread(target=news_stock_analyzer, args=(stock_ticker, db_manager)).start()
 
@@ -242,3 +250,4 @@ if __name__ == "__main__":
     # Close DB connection and cache on exit
     db_manager.close()
     cache.close()
+    conn.close()
