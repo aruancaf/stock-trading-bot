@@ -19,10 +19,6 @@ import backtrader as bt
 # Load environment variables from .env file
 load_dotenv()
 
-# Debugging: print environment variables to ensure they are loaded
-print(f"ALPACA_API_KEY: {os.getenv('ALPACA_API_KEY')}")
-print(f"ALPACA_SECRET_KEY: {os.getenv('ALPACA_SECRET_KEY')}")
-
 # Initialize the lock
 db_lock = threading.Lock()
 position_lock = threading.Lock()
@@ -80,7 +76,7 @@ def stock_position_analyzer(db_manager):
         time.sleep(const.ANALYSIS_INTERVAL)
 
 def should_sell(current_price, purchase_price):
-    return_price = (current_price - purchase_price) / purchase_price;
+    return_price = (current_price - purchase_price) / purchase_price
     return 0.03 <= return_price <= 0.05
 
 def check_perform_sell(stock_ticker, trade_type, purchase_price, db_manager):
@@ -164,34 +160,17 @@ def news_stock_analyzer(stock_ticker, db_manager):
     except Exception as e:
         logging.error(f"News analysis not working for {stock_ticker}. Error: {e}")
 
-def run_backtests(db_manager):
-    start_date = datetime.now() - timedelta(days=365 * 2)  # Last 2 years
-    end_date = datetime.now()
-    initial_balance = 1000 # Initial balance for backtesting
-
-    strategy_runner = StrategyRunner(db_manager)
-    tickers = const.STOCKS_TO_CHECK + scraper.active_stocks()
-    partitioned_tickers = util.partition_array(tickers, const.BACKTEST_BATCH_SIZE)
-
-    for tickers_batch in partitioned_tickers:
-        for strategy_name, strategy in strategy_runner.strategies.items():
-            results = bt.run_strategy(strategy, tickers_batch, start_date, end_date, initial_balance)
-            for result in results:
-                db_manager.insert_backtest_result(result)
-            logging.info(f"Completed backtest for strategy {strategy_name} on batch {tickers_batch}")
-
-
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     logging.info("Starting the trading bot")
 
-    # Initialize DBManager with credentials
+    # Load DB credentials from .env file
     db_credentials = {
-        "db_name": "d3ha20qotuevh",
-        "user": "u8phojsf5b8lth",
-        "password": "pbfc21d81db062e1af847f6a6abf9644931c3b6345f825c2ec356ea25768ddc5b",
-        "host": "c5p86clmevrg5s.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com",
-        "port": "5432"
+        "dbname": os.getenv("DB_NAME"),
+        "user": os.getenv("DB_USER"),
+        "password": os.getenv("DB_PASSWORD"),
+        "host": os.getenv("DB_HOST"),
+        "port": os.getenv("DB_PORT")
     }
     db_manager = dbHandler(db_credentials)
 
@@ -240,15 +219,22 @@ if __name__ == "__main__":
             else:
                 logging.info("Market Close")
 
-            # Execute the news analyzer for both constant stocks and active stocks from the scraper module
+                # Run the backtester continuously until market opens
+                while current_time >= const.STOCK_MARKET_CLOSE_TIME or current_time < const.STOCK_MARKET_OPEN_TIME:
+                    logging.info("Starting Backtester")
+                    threading.Thread(target=StrategyRunner(db_manager).run_strategy, args=(db_manager,)).start()  # Run backtests after other tasks
+                    time.sleep(3600)  # Wait for an hour before running again
+                    current_time = datetime.now().strftime("%H:%M")
+
+                       # Execute the news analyzer for both constant stocks and active stocks from the scraper module
             for stock_ticker in const.STOCKS_TO_CHECK + scraper.active_stocks():
                 threading.Thread(target=news_stock_analyzer, args=(stock_ticker, db_manager)).start()
 
             logging.info("Starting Backtester")
-            threading.Thread(target=run_backtests, args=(db_manager,)).start()  # Run backtests after other tasks
+            threading.Thread(target=StrategyRunner(db_manager).run_strategy, args=(db_manager,)).start()  # Run backtests after other tasks
 
             logging.info("Finished Backtester")
-            time.sleep(3600)  # Wait for an hour before checking again
+            time.sleep(14400)  # Wait for 4 hours before running again
         except Exception as e:
             logging.error(f"Restarting due to error: {e}")
             time.sleep(60)  # Wait for a minute before retrying in case of an error

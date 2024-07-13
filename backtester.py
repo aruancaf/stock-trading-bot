@@ -1,13 +1,16 @@
 import os
+from matplotlib import pyplot as plt
+from numpy import conj
 import pandas as pd
-import constants
-from db_manager import dbHandler
-import stock_data_gatherer as sdg
-import util
-import datetime as dt
-import matplotlib.pyplot as plt
+import sqlite3
 import logging
-from typing import List, Dict, Any, Counter
+from db_manager import dbHandler
+from main import get_historical_data
+import scraper
+import util
+from collections import Counter
+from  stock_data_gatherer import get_all_tickers 
+logging.basicConfig(filename='backtester.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 class PositionSizer:
     def __init__(self, risk_per_trade=0.01, max_leverage=1.0):
@@ -33,7 +36,6 @@ class Backtester:
             self.balance -= price
             self.trades.append({'ticker': ticker, 'price': price, 'date': date, 'type': 'buy'})
             logging.info(f"Bought {ticker} at {price} on {date}")
-            print(f"Bought {ticker} at {price} on {date}")
 
     def sell_stock(self, ticker, price, date):
         if ticker in self.positions:
@@ -41,18 +43,16 @@ class Backtester:
             self.trades.append({'ticker': ticker, 'price': price, 'date': date, 'type': 'sell'})
             del self.positions[ticker]
             logging.info(f"Sold {ticker} at {price} on {date}")
-            print(f"Sold {ticker} at {price} on {date}")
 
     def run_strategy(self, strategy, tickers):
         for ticker in tickers:
             logging.info(f"Fetching historical data for {ticker}")
-            print(f"Fetching historical data for {ticker}")
             try:
-                historical_data = sdg.get_historical_data(ticker, '1yr', '5m')
-                if historical_data is not None:
+                historical_data = get_historical_data(conj, ticker)
+                if not historical_data.empty:
                     for date, row in historical_data.iterrows():
                         stock_info = {
-                            'price': row['Close'],
+                            'price': row['close'],
                             'SMA': util.calculate_sma(historical_data)[0],
                             'EMA': util.calculate_ema(historical_data),
                             'TRIX': util.calculate_trix(historical_data)[0],
@@ -64,15 +64,13 @@ class Backtester:
                         }
                         signal = strategy(ticker, stock_info)
                         if signal == 'buy':
-                            self.buy_stock(ticker, row['Close'], date)
+                            self.buy_stock(ticker, row['close'], date)
                         elif signal == 'sell':
-                            self.sell_stock(ticker, row['Close'], date)
+                            self.sell_stock(ticker, row['close'], date)
                 else:
                     logging.warning(f"No historical data for {ticker}")
-                    print(f"No historical data for {ticker}")
             except Exception as e:
                 logging.error(f"Error fetching data for {ticker}: {e}")
-                print(f"Error fetching data for {ticker}: {e}")
 
     def generate_report(self):
         if not self.trades:
@@ -141,7 +139,6 @@ class Backtester:
         wins = df[df['price'] > 0]['price']
         losses = df[df['price'] < 0]['price']
         returns = df['price']
-        
         avg_win = 0 if wins.empty else wins.mean()
         avg_loss = 0 if losses.empty else abs(losses.mean())
 
@@ -212,18 +209,27 @@ class StrategyRunner:
     def run_backtest(self, start_date, end_date, initial_balance):
         backtester = Backtester(start_date, end_date, initial_balance)
         # Fetch the historical stock data
-        tickers_historical_data = sdg.get_stocks_with_historical_data()
+        conn = sqlite3.connect("stocks.db")
+        tickers = get_all_tickers(conn)
+        tickers_historical_data = {ticker: get_historical_data(conn, ticker) for ticker in tickers}
+        conn.close()
 
-        batches = util.partition_array(tickers_historical_data, 10)  # Split tickers into batches of 10
+        batches = util.partition_array(list(tickers_historical_data.keys()), 10)  # Split tickers into batches of 10
 
         for batch_num, batch in enumerate(batches):
             logging.info(f"Starting backtest for batch {batch_num + 1}/{len(batches)}: {batch}")
+            print(f"Starting backtest for batch {batch_num + 1}/{len(batches)}: {batch}")
             for name, strategy in self.strategies.items():
                 try:
                     logging.info(f"Running strategy {name} on batch {batch}")
-                    backtester.run_strategy(strategy, batch)
+                    print(f"Starting strategy {name} on batch {batch_num + 1}")
+                    for ticker in batch:
+                        historical_data = tickers_historical_data[ticker]
+                        stock_info = {'historical_data': historical_data}
+                        backtester.run_strategy(strategy, [ticker])
                     metrics = backtester.calculate_metrics()
                     logging.info(f"Backtest metrics for {name} in batch {batch_num + 1}: {metrics}")
+                    print(f"Finished strategy {name} on batch {batch_num + 1}")
 
                     self.results.append({
                         'strategy': name,
@@ -236,10 +242,13 @@ class StrategyRunner:
                     self.scores[best_strategy] += 1
                 except Exception as e:
                     logging.error(f"Error running strategy {name} on batch {batch}: {e}")
+                    print(f"Error running strategy {name} on batch {batch_num + 1}: {e}")
             logging.info(f"Completed backtest for batch {batch_num + 1}/{len(batches)}")
+            print(f"Completed backtest for batch {batch_num + 1}/{len(batches)}")
 
         best_overall_strategy = max(self.scores, key=self.scores.get)
         logging.info(f"Best overall strategy: {best_overall_strategy} with score: {self.scores[best_overall_strategy]}")
+        print(f"Best overall strategy: {best_overall_strategy} with score: {self.scores[best_overall_strategy]}")
         return backtester.calculate_performance()
 
     def get_results(self):
@@ -265,15 +274,8 @@ if __name__ == "__main__":
     end_date = "2024-12-31"
     initial_balance = 1000
 
-    # Fetch the historical stock data
-    tickers_historical_data = sdg.get_stocks_with_historical_data()
-
-    for ticker in tickers_historical_data:
-        try:
-            logging.info(f"Running backtest for {ticker}")
-            strategy_runner.run_backtest(start_date=start_date, end_date=end_date, initial_balance=initial_balance)
-        except Exception as e:
-            logging.error(f"Error running backtest for {ticker}: {e}")
+    # Run backtests on all tickers with historical data
+    strategy_runner.run_backtest(start_date=start_date, end_date=end_date, initial_balance=initial_balance)
 
     # Get the results from the strategy runner
     try:
@@ -282,6 +284,7 @@ if __name__ == "__main__":
             db_manager.save_result(result)  # Assuming this method exists to save the result to the database
     except Exception as e:
         logging.error(f"Error saving results: {e}")
+        print(f"Error saving results: {e}")
 
     # Close DB connection on exit
     db_manager.close()

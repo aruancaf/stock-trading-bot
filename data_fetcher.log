@@ -1,0 +1,9 @@
+2024-07-13 02:01:00,362 - INFO - Processing path/to/your/file.csv and inserting into historical_stock_data
+2024-07-13 02:02:30,243 - ERROR - Missing required environment variables: S3_ENDPOINT, S3_BUCKET
+2024-07-13 02:04:00,503 - ERROR - Missing required environment variables: S3_ENDPOINT, S3_BUCKET
+2024-07-13 02:06:36,136 - ERROR - Missing required environment variables: S3_ENDPOINT, S3_BUCKET
+2024-07-13 02:06:40,984 - ERROR - Missing required environment variables: S3_ENDPOINT, S3_BUCKET
+2024-07-13 02:07:35,348 - INFO - Processing path/to/your/file.csv and inserting into historical_stock_data
+2024-07-13 02:12:21,764 - INFO - Processing path/to/your/file.csv and inserting into historical_stock_data
+2024-07-13 02:19:35,399 - INFO - Processing us_stocks_sip/day_aggs_v1/2022/01/2022-01-03.csv.gz and inserting into historical_stock_data
+2024-07-13 02:21:22,162 - INFO - Processing us_stocks_sip/day_aggs_v1/2022/01/2022-01-03.csv.gz and inserting into historical_stock_data

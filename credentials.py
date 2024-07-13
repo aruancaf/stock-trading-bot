@@ -2,6 +2,10 @@ from dotenv import load_dotenv
 import os
 
 load_dotenv()  # Load environment variables from .env file
+AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
+POLYGON_API_KEY = os.getenv('POLYGON_API_KEY')
+TWELVE_DATA_API_KEY = os.getenv('TWELVE_DATA_API_KEY')
 NEW_RELIC_LICENSE_KEY = os.getenv("NEW_RELIC_LICENSE_KEY")
 NEWS_API_KEY = os.getenv("NEWS_API_KEY")
 FINNHUB_API_KEY = os.getenv("FINNHUB_API_KEY")
