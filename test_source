@@ -1,0 +1,84 @@
+import os
+import requests
+import pandas as pd
+from bs4 import BeautifulSoup
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
+
+# Fetch API key from environment variables
+QUANDL_API_KEY = os.getenv('QUANDL_API_KEY')
+
+def fetch_nasdaq_data(symbol):
+    url = f"https://data.nasdaq.com/api/v3/datasets/WIKI/{symbol}/data.json"
+    params = {"api_key": QUANDL_API_KEY}
+    try:
+        response = requests.get(url, params=params)
+        response.raise_for_status()  # Raise an error for bad status codes
+        data = response.json()
+
+        # Extract necessary data (this may vary based on the exact structure of the response)
+        dataset_data = data.get("dataset_data", {})
+        historical_data = dataset_data.get("data", [])
+        columns = dataset_data.get("column_names", [])
+
+        if not historical_data:
+            return None
+        df = pd.DataFrame(historical_data, columns=columns)
+        df['Date'] = pd.to_datetime(df['Date'])
+        df.set_index('Date', inplace=True)
+        return df
+    except Exception as e:
+        print(f"Error fetching data for {symbol}: {e}")
+        return None
+
+def check_data_availability(data):
+    if data is not None:
+        last_date = data.index.max()
+        first_date = data.index.min()
+        if (last_date - first_date).days >= 5*365:
+            return True
+    return False
+
+def fetch_sp500_list():
+    url = "https://en.wikipedia.org/wiki/List_of_S%26P_500_companies"
+    response = requests.get(url)
+    soup = BeautifulSoup(response.text, 'html.parser')
+    table = soup.find('table', {'id': 'constituents'})
+    symbols = []
+    for row in table.findAll('tr')[1:]:
+        symbol = row.findAll('td')[0].text.strip()
+        symbols.append(symbol)
+    return symbols
+
+# Main script
+if __name__ == "__main__":
+    symbols = fetch_sp500_list()
+    valid_symbols = []
+    no_data_symbols = []
+    
+    for symbol in symbols:
+        print(f"Checking data for {symbol}")
+        data = fetch_nasdaq_data(symbol)
+        if check_data_availability(data):
+            print(f"Data available for {symbol}")
+            valid_symbols.append(symbol)
+            # Print the first three lines of the data
+            print(data.head(3))
+        else:
+            print(f"No data available for {symbol}")
+            no_data_symbols.append(symbol)
+
+    # Save valid symbols to TICKERS.csv
+    valid_symbols_df = pd.DataFrame(valid_symbols, columns=['Symbol'])
+    valid_symbols_df.to_csv('TICKERS.csv', index=False)
+
+    # Save no data symbols to BLACKLIST.csv
+    no_data_symbols_df = pd.DataFrame(no_data_symbols, columns=['Symbol'])
+    no_data_symbols_df.to_csv('BLACKLIST.csv', index=False)
+
+    print("Symbols with no data available for the last 5 years:")
+    print(no_data_symbols)
+    print("Valid symbols saved to TICKERS.csv")
+    print("No data symbols saved to BLACKLIST.csv")

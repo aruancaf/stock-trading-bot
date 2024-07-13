@@ -1,0 +1,6 @@
+2024-07-12 18:31:15,955 - INFO - Starting backtest for batch 1/10: ['AAPL', 'INTC', 'AMD', 'NVDA', 'TSLA', 'META', 'AVGO']
+2024-07-12 18:33:46,242 - INFO - Starting backtest for batch 1/10: ['AAPL', 'INTC', 'AMD', 'NVDA', 'TSLA', 'META', 'AVGO']
+2024-07-12 18:34:10,713 - INFO - Starting backtest for batch 1/10: ['AAPL', 'INTC', 'AMD', 'NVDA', 'TSLA', 'META', 'AVGO']
+2024-07-12 18:36:11,680 - INFO - Starting backtest for batch 1/10: ['AAPL', 'INTC', 'AMD', 'NVDA', 'TSLA', 'META', 'AVGO']
+2024-07-12 18:39:53,738 - INFO - Starting backtest for batch 1/10: ['AAPL', 'INTC', 'AMD', 'NVDA', 'TSLA', 'META', 'AVGO']
+2024-07-12 18:44:31,114 - INFO - Starting backtest for batch 1/10: ['AAPL', 'INTC', 'AMD', 'NVDA', 'TSLA', 'META', 'AVGO']

@@ -4,8 +4,8 @@ import numpy as np
 import yfinance as yf
 from typing import List, Tuple
 
-# param history : pd.DataFrame
-# Return format: [current_sma, previous_sma]
+
+
 
 def get_historical_data(ticker_symbol: str, time_period: str = '1mo', time_interval: str = '1d') -> pd.DataFrame:
     """
@@ -18,6 +18,50 @@ def get_historical_data(ticker_symbol: str, time_period: str = '1mo', time_inter
     """
     ticker = yf.Ticker(ticker_symbol)
     return ticker.history(period=time_period, interval=time_interval)
+def calculate_rapid_rebound(data: pd.DataFrame, 
+                           price_drop_threshold: float = 0.03,
+                           volume_spike_threshold: float = 1.5,
+                           rsi_period: int = 14,
+                           rsi_oversold: int = 30,
+                           holding_period: int = 4,
+                           profit_target: float = None,
+                           stop_loss: float = None) -> Tuple[float, float]:
+    
+    # Initialize necessary indicators
+    data['RSI'] = bt.indicators.RSI(data['Close'], period=rsi_period)
+    
+    order = None
+    entry_price = None
+    entry_time = None
+    exit_price = None
+
+    # Iterate through each row (assuming data is sorted by date)
+    for i in range(1, len(data)):
+        if order:
+            continue
+
+        # Check for entry conditions
+        if (data['Open'][i] < (1 - price_drop_threshold) * data['Close'][i-1] and
+            data['Volume'][i] > volume_spike_threshold * data['Volume'][i-1] and
+            data['RSI'][i] < rsi_oversold):
+
+            entry_price = data['Close'][i]
+            entry_time = data.index[i]
+            order = 'BUY'
+
+        # Check for exit conditions
+        if order:
+            current_time = data.index[i]
+            exit_time = entry_time + pd.Timedelta(days=holding_period)
+
+            if (data['Close'][i] >= entry_price * (1 + profit_target) or
+                data['Close'][i] <= entry_price * (1 - stop_loss) or
+                current_time >= exit_time):
+                exit_price = data['Close'][i]
+                order = 'SELL'
+
+    return entry_price, exit_price
+
 def calculate_ema(data: pd.DataFrame, period: int = 20) -> float:
     ema = data['Close'].ewm(span=period, adjust=False).mean()
     return ema.iloc[-1]
@@ -36,68 +80,29 @@ def calculate_trix(data: pd.DataFrame, period: int = 15) -> float:
     trix = 100 * (ema3.diff() / ema3.shift(1))
     return trix.iloc[-1]
 
-def calculate_aroon(data: pd.DataFrame, period: int = 25) -> float:
-    aroon_up = ((period - data['High'].rolling(window=period).apply(lambda x: x.argmax(), raw=True)) / period) * 100
-    aroon_down = ((period - data['Low'].rolling(window=period).apply(lambda x: x.argmin(), raw=True)) / period) * 100
-    return aroon_up.iloc[-1] - aroon_down.iloc[-1]
+def calculate_aroon(data: pd.DataFrame, period: int = 25) -> Tuple[float, float]:
+    aroon_up = data['High'].rolling(window=period).apply(lambda x: (x.argmax() + 1) * 100 / period, raw=True)
+    aroon_down = data['Low'].rolling(window=period).apply(lambda x: (x.argmin() + 1) * 100 / period, raw=True)
+    return aroon_up.iloc[-1], aroon_down.iloc[-1]
 
-def calculate_elder_ray(data: pd.DataFrame, period: int = 13) -> float:
-    bull_power = data['High'] - data['Close'].ewm(span=period, adjust=False).mean()
-    bear_power = data['Low'] - data['Close'].ewm(span=period, adjust=False).mean()
-    return bull_power.iloc[-1] - bear_power.iloc[-1]
+def calculate_elder_ray(data: pd.DataFrame) -> Tuple[float, float]:
+    bull_power = data['High'] - data['Close'].ewm(span=13, adjust=False).mean()
+    bear_power = data['Low'] - data['Close'].ewm(span=13, adjust=False).mean()
+    return bull_power.iloc[-1], bear_power.iloc[-1]
 
 def calculate_heikin_ashi(data: pd.DataFrame) -> float:
     ha_close = (data['Open'] + data['High'] + data['Low'] + data['Close']) / 4
     return ha_close.iloc[-1]
 
-def calculate_rapid_rebound(data: pd.DataFrame, period: int = 14) -> float:
-    rsi = calculate_rsi(data, period)
+def calculate_rsi(data: pd.DataFrame, period: int = 14) -> float:
+    delta = data['Close'].diff()
+    gain = (delta.where(delta > 0, 0)).rolling(window=period).mean()
+    loss = (-delta.where(delta < 0, 0)).rolling(window=period).mean()
+    rs = gain / loss
+    rsi = 100 - (100 / (1 + rs))
     return rsi.iloc[-1]
 
-def calculate_parabolic_sar(data: pd.DataFrame, af: float = 0.02, max_af: float = 0.2) -> float:
-    psar = data['Close'].copy()
-    psar_high = data['High'].copy()
-    psar_low = data['Low'].copy()
-    bull = True
-    psar.iloc[0] = data['Close'].iloc[0]
-    ep = data['High'].iloc[0]
-    af_value = af
-
-    for i in range(1, len(data)):
-        psar.iloc[i] = psar.iloc[i - 1] + af_value * (ep - psar.iloc[i - 1])
-        if bull:
-            if data['Low'].iloc[i] < psar.iloc[i]:
-                bull = False
-                psar.iloc[i] = ep
-                ep = data['Low'].iloc[i]
-                af_value = af
-            elif data['High'].iloc[i] > ep:
-                ep = data['High'].iloc[i]
-                af_value = min(af_value + af, max_af)
-        else:
-            if data['High'].iloc[i] > psar.iloc[i]:
-                bull = True
-                psar.iloc[i] = ep
-                ep = data['High'].iloc[i]
-                af_value = af
-            elif data['Low'].iloc[i] < ep:
-                ep = data['Low'].iloc[i]
-                af_value = min(af_value + af, max_af)
-
-    return psar.iloc[-1]
 def calculate_parabolic_sar(data: pd.DataFrame, af_start: float = 0.02, af_increment: float = 0.02, af_max: float = 0.2) -> pd.Series:
-    """
-    Calculate the Parabolic SAR for a given DataFrame with OHLC data.
-    
-    Parameters:
-        data (pd.DataFrame): DataFrame containing 'High', 'Low' columns.
-        af_start (float): Starting Acceleration Factor (default is 0.02).
-        af_increment (float): Increment of Acceleration Factor (default is 0.02).
-        af_max (float): Maximum value of Acceleration Factor (default is 0.2).
-    
-    Returns:
-        pd.Series: Series with the calculated Parabolic SAR values.
-    """
     psar = data['Close'].copy()
     psar.iloc[0] = data['Low'].iloc[0]
     uptrend = True
@@ -135,50 +140,17 @@ def calculate_sma(data: pd.DataFrame, period: int = 20) -> Tuple[float, float]:
     sma = data['Close'].rolling(window=period).mean()
     return sma.iloc[-1], sma.iloc[-2]
 
-
-def calculate_moving_average(data: pd.DataFrame, period: int = 20) -> float:
-    if 'Close' not in data.columns:
-        raise ValueError("DataFrame must contain 'Close' column.")
-    sma = data['Close'].rolling(window=period).mean()
-    return sma.iloc[-1]
-
-def calculate_ema(data: pd.DataFrame, period: int = 20) -> float:
-    ema = data['Close'].ewm(span=period, adjust=False).mean()
-    return ema.iloc[-1]
-
-def calculate_trix(data: pd.DataFrame, period: int = 15) -> Tuple[float, float]:
+def calculate_trix_signal(data: pd.DataFrame, period: int = 15) -> Tuple[float, float]:
     trix = data['Close'].ewm(span=period, adjust=False).mean()
     trix_diff = trix.diff()
     trix_signal = (trix_diff / trix.shift()) * 100
     return trix_signal.iloc[-1], trix_signal.iloc[-2]
-
-def calculate_aroon(data: pd.DataFrame, period: int = 25) -> Tuple[float, float]:
-    aroon_up = data['High'].rolling(window=period).apply(lambda x: (x.argmax() + 1) * 100 / period, raw=True)
-    aroon_down = data['Low'].rolling(window=period).apply(lambda x: (x.argmin() + 1) * 100 / period, raw=True)
-    return aroon_up.iloc[-1], aroon_down.iloc[-1]
-
-def calculate_elder_ray(data: pd.DataFrame) -> Tuple[float, float]:
-    bull_power = data['High'] - data['Close'].ewm(span=13, adjust=False).mean()
-    bear_power = data['Low'] - data['Close'].ewm(span=13, adjust=False).mean()
-    return bull_power.iloc[-1], bear_power.iloc[-1]
-
-def calculate_rsi(data: pd.DataFrame, period: int = 14) -> float:
-    delta = data['Close'].diff()
-    gain = (delta.where(delta > 0, 0)).rolling(window=period).mean()
-    loss = (-delta.where(delta < 0, 0)).rolling(window=period).mean()
-    rs = gain / loss
-    rsi = 100 - (100 / (1 + rs))
-    return rsi.iloc[-1]
 
 def calculate_price_drop(data: pd.DataFrame, threshold: float) -> bool:
     return data['Open'].iloc[-1] < (1 - threshold) * data['Close'].iloc[-2]
 
 def calculate_volume_spike(data: pd.DataFrame, spike_threshold: float) -> bool:
     return data['Volume'].iloc[-1] > spike_threshold * data['Volume'].iloc[-2]
-
-def calculate_heikin_ashi(data: pd.DataFrame) -> float:
-    heikin_ashi_close = (data['Open'] + data['High'] + data['Low'] + data['Close']) / 4
-    return heikin_ashi_close.iloc[-1]
 
 def calculate_volume_slope(data: pd.DataFrame) -> float:
     if not isinstance(data, pd.DataFrame):
@@ -199,6 +171,7 @@ def calculate_volume_slope(data: pd.DataFrame) -> float:
 
 def get_volume_slope(ticker_symbol: str, historical_data: pd.DataFrame) -> float:
     return calculate_volume_slope(historical_data)
+
 def partition_array(array, number_of_partitions):
     partition_size = math.ceil(len(array) / number_of_partitions)
     chunked = []
@@ -226,16 +199,14 @@ def linear_regress_slope(x_step, y_values):
     try:
         x_mean = (len(y_values)-1)/2
         y_mean = sum(y_values)/len(y_values)
-        x_summation_stdev = sum((i - x_mean)**2 for i in range(len(y_values)))
-        y_summation_stdev = sum(
-            (y_values.iloc[i] - y_mean) ** 2 for i in range(len(y_values))
-        )
+        x_summation_stdev = sum((I - x_mean)**2 for I in range(len(y_values)))
+        y_summation_stdev = sum((y - y_mean) ** 2 for y in y_values)
         x_std = (x_summation_stdev/(len(y_values)-1))**0.5
         y_std = (y_summation_stdev/(len(y_values)-1))**0.5
 
         summation_temp = sum(
-            ((i - x_mean) / x_std) * ((y_values.iloc[i] - y_mean) / y_std)
-            for i in range(len(y_values))
+            ((I - x_mean) / x_std) * ((y_values.iloc[I] - y_mean) / y_std)
+            for I in range(len(y_values))
         )
         correlation_coefficent = summation_temp/(len(y_values) - 1)
         return correlation_coefficent * y_std/x_std

@@ -21,22 +21,44 @@ def strategySmaCrossover(market, period, stratParams=None):
             return 'no posittion'
     else:
         return 'no posittion'
-
 def meanReversionStrategy(market, period, stratParams=None):
     if stratParams is None:
-        stratParams = [20, 2]
-    window = stratParams[0]
-    threshold = stratParams[1]
+        stratParams = {
+            'window': 20,
+            'threshold': 2,
+            'ma_type': 'sma',  # 'sma' for simple moving average, 'ema' for exponential moving average
+            'stop_loss': 0.05,  # 5% stop-loss
+            'take_profit': 0.4  # 40% take-profit
+        }
+    
+    window = stratParams['window']
+    threshold = stratParams['threshold']
+    ma_type = stratParams['ma_type']
+    stop_loss = stratParams['stop_loss']
+    take_profit = stratParams['take_profit']
 
     if period < window:
         return 'no position'
 
-    moving_average = market.sma(period, window)
-    price = market.data.iloc[period]  # Use .iloc for position-based indexing
+    if ma_type == 'sma':
+        moving_average = market.sma(period, window)
+    elif ma_type == 'ema':
+        moving_average = market.data.iloc[:period+1].ewm(span=window, adjust=False).mean().iloc[-1]
 
-    if price < moving_average - threshold:  # Price is significantly below the moving average
+    price = market.data.iloc[period]
+
+    # Buy signal: price is significantly below the moving average
+    if price < moving_average - threshold:
         return 'buy'
-    elif price > moving_average + threshold:  # Price is significantly above the moving average
+    
+    # Sell signal: price is significantly above the moving average
+    elif price > moving_average + threshold:
         return 'sell'
-    else:
-        return 'hold'
+    
+    # Stop-loss and take-profit levels
+    if market.data.iloc[period - 1] * (1 - stop_loss) >= price:
+        return 'sell'  # Stop-loss triggered
+    if market.data.iloc[period - 1] * (1 + take_profit) <= price:
+        return 'sell'  # Take-profit triggered
+    
+    return 'hold'
