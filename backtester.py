@@ -1,16 +1,16 @@
 import os
 from matplotlib import pyplot as plt
-from numpy import conj
 import pandas as pd
 import sqlite3
 import logging
 from db_manager import dbHandler
-from main import get_historical_data
+from data_middleman import get_historical_data  # Correct import statement
 import scraper
 import util
 from collections import Counter
-from  stock_data_gatherer import get_all_tickers 
-logging.basicConfig(filename='backtester.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+from stock_data_gatherer import get_all_tickers
+
+logging.basicConfig(filename='backtester.log', level=logging.INFO, format='%(asctime)s - %(levelname=s - %(message=s')
 
 class PositionSizer:
     def __init__(self, risk_per_trade=0.01, max_leverage=1.0):
@@ -43,34 +43,6 @@ class Backtester:
             self.trades.append({'ticker': ticker, 'price': price, 'date': date, 'type': 'sell'})
             del self.positions[ticker]
             logging.info(f"Sold {ticker} at {price} on {date}")
-
-    def run_strategy(self, strategy, tickers):
-        for ticker in tickers:
-            logging.info(f"Fetching historical data for {ticker}")
-            try:
-                historical_data = get_historical_data(conj, ticker)
-                if not historical_data.empty:
-                    for date, row in historical_data.iterrows():
-                        stock_info = {
-                            'price': row['close'],
-                            'SMA': util.calculate_sma(historical_data)[0],
-                            'EMA': util.calculate_ema(historical_data),
-                            'TRIX': util.calculate_trix(historical_data)[0],
-                            'AROON_UP': util.calculate_aroon(historical_data)[0],
-                            'BULL_POWER': util.calculate_elder_ray(historical_data)[0],
-                            'HEIKIN_ASHI_CLOSE': util.calculate_heikin_ashi(historical_data),
-                            'PSAR': util.calculate_parabolic_sar(historical_data),
-                            'RSI': util.calculate_rsi(historical_data)
-                        }
-                        signal = strategy(ticker, stock_info)
-                        if signal == 'buy':
-                            self.buy_stock(ticker, row['close'], date)
-                        elif signal == 'sell':
-                            self.sell_stock(ticker, row['close'], date)
-                else:
-                    logging.warning(f"No historical data for {ticker}")
-            except Exception as e:
-                logging.error(f"Error fetching data for {ticker}: {e}")
 
     def generate_report(self):
         if not self.trades:
@@ -194,17 +166,82 @@ class StrategyRunner:
     def combined_strategy(self, stock_info) -> float:
         score = 0
         historical_data = stock_info['historical_data']
+        open = historical_data['open']
+        high = historical_data['high']
+        low = historical_data['low']
+        close = historical_data['close']
 
         # Use the historical data DataFrame for calculations
-        score += util.calculate_sma(historical_data)[0]
+        sma_values = util.calculate_sma(historical_data)
+        if sma_values[0] is not None:
+            score += sma_values[0]
+        
         score += util.calculate_volume(historical_data)
-        score += util.calculate_trix(historical_data)[0]
-        score += util.calculate_aroon(historical_data)[0]
-        score += util.calculate_elder_ray(historical_data)[0]
-        score += util.calculate_heikin_ashi(historical_data)
-        score += util.calculate_parabolic_sar(historical_data)
-        score += util.calculate_rsi(historical_data)
+        
+        trix_value = util.calculate_trix(close)
+        if trix_value is not None:
+            score += trix_value
+        
+        aroon_up, aroon_down = util.calculate_aroon(high, low)
+        if aroon_up is not None:
+            score += aroon_up
+        
+        bull_power, bear_power = util.calculate_elder_ray(high, low, close)
+        if bull_power is not None:
+            score += bull_power
+        
+        heikin_ashi_close = util.calculate_heikin_ashi(open, high, low, close)
+        if heikin_ashi_close is not None:
+            score += heikin_ashi_close
+        
+        psar_value = util.calculate_parabolic_sar(close, low, high)
+        if psar_value is not None:
+            score += psar_value
+        
+        rsi_value = util.calculate_rsi(close)
+        if rsi_value is not None:
+            score += rsi_value
+        
         return score
+
+    def run_strategy(self, strategy, tickers, conn):
+        for ticker in tickers:
+            logging.info(f"Fetching historical data for {ticker}")
+            try:
+                historical_data = get_historical_data(conn, ticker)
+                if not historical_data.empty:
+                    open = historical_data['open']
+                    high = historical_data['high']
+                    low = historical_data['low']
+                    close = historical_data['close']
+                    for date, row in historical_data.iterrows():
+                        bull_power, bear_power = util.calculate_elder_ray(high, low, close)
+                        stock_info = {
+                            'price': row['close'],
+                            'SMA': util.calculate_sma(historical_data),
+                            'EMA': util.calculate_ema(close),
+                            'TRIX': util.calculate_trix(close),
+                            'AROON_UP': util.calculate_aroon(high, low)[0],
+                            'AROON_DOWN': util.calculate_aroon(high, low)[1],
+                            'BULL_POWER': bull_power,
+                            'BEAR_POWER': bear_power,
+                                                       'HEIKIN_ASHI_CLOSE': util.calculate_heikin_ashi(open, high, low, close),
+                            'PSAR': util.calculate_parabolic_sar(close, low, high),
+                            'RSI': util.calculate_rsi(close),
+                            'historical_data': historical_data
+                        }
+                        signal = strategy(stock_info)
+                        if isinstance(signal, str):
+                            if signal == 'buy':
+                                Backtester.buy_stock(ticker, row['close'], date)
+                            elif signal == 'sell':
+                                Backtester.sell_stock(ticker, row['close'], date)
+                        else:
+                            logging.warning(f"Invalid signal for {ticker} on {date}: {signal}")
+                else:
+                    logging.warning(f"No historical data for {ticker}")
+            except Exception as e:
+                logging.error(f"Error fetching data for {ticker}: {e}")
 
     def run_backtest(self, start_date, end_date, initial_balance):
         backtester = Backtester(start_date, end_date, initial_balance)
@@ -212,9 +249,9 @@ class StrategyRunner:
         conn = sqlite3.connect("stocks.db")
         tickers = get_all_tickers(conn)
         tickers_historical_data = {ticker: get_historical_data(conn, ticker) for ticker in tickers}
-        conn.close()
 
-        batches = util.partition_array(list(tickers_historical_data.keys()), 10)  # Split tickers into batches of 10
+        # Convert the generator to a list
+        batches = list(util.partition_array(list(tickers_historical_data.keys()), 10))  # Split tickers into batches of 10
 
         for batch_num, batch in enumerate(batches):
             logging.info(f"Starting backtest for batch {batch_num + 1}/{len(batches)}: {batch}")
@@ -223,10 +260,7 @@ class StrategyRunner:
                 try:
                     logging.info(f"Running strategy {name} on batch {batch}")
                     print(f"Starting strategy {name} on batch {batch_num + 1}")
-                    for ticker in batch:
-                        historical_data = tickers_historical_data[ticker]
-                        stock_info = {'historical_data': historical_data}
-                        backtester.run_strategy(strategy, [ticker])
+                    self.run_strategy(strategy, batch, conn)
                     metrics = backtester.calculate_metrics()
                     logging.info(f"Backtest metrics for {name} in batch {batch_num + 1}: {metrics}")
                     print(f"Finished strategy {name} on batch {batch_num + 1}")
@@ -246,6 +280,8 @@ class StrategyRunner:
             logging.info(f"Completed backtest for batch {batch_num + 1}/{len(batches)}")
             print(f"Completed backtest for batch {batch_num + 1}/{len(batches)}")
 
+        conn.close()
+
         best_overall_strategy = max(self.scores, key=self.scores.get)
         logging.info(f"Best overall strategy: {best_overall_strategy} with score: {self.scores[best_overall_strategy]}")
         print(f"Best overall strategy: {best_overall_strategy} with score: {self.scores[best_overall_strategy]}")
@@ -256,7 +292,7 @@ class StrategyRunner:
 
 if __name__ == "__main__":
     # Set up logging
-    logging.basicConfig(filename='backtester.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+    logging.basicConfig(filename='backtester.log', level=logging.INFO, format='%(asctime)s - %(levelname=s - %(message=s')
 
     # Initialize DBManager with credentials from environment variables
     db_credentials = {

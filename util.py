@@ -71,24 +71,27 @@ def calculate_sma(data: pd.DataFrame, period: int = 14) -> Tuple[Optional[float]
     Calculate the Simple Moving Average (SMA) for the given data and period.
 
     Args:
-        data (pd.DataFrame): The historical stock data.
+        data (pd.DataFrame or pd.Series): The historical stock data.
         period (int): The period over which to calculate the SMA.
 
     Returns:
         Tuple[Optional[float], Optional[float]]: The most recent and second most recent SMA values.
     """
-    if 'close' not in data.columns:
-        raise ValueError("The data must contain a 'close' column.")
-    
-    data_numeric = data['close']
-    
+    if isinstance(data, pd.DataFrame):
+        if 'close' not in data.columns:
+            raise ValueError("The DataFrame must contain a 'close' column.")
+        data_numeric = data['close']
+    elif isinstance(data, pd.Series):
+        data_numeric = data
+    else:
+        raise TypeError("The data must be a pandas DataFrame or Series.")
+
     if len(data_numeric) < period:
         print(f"Not enough data to calculate SMA for period: {period}")
         return None, None
-    
+
     sma = data_numeric.rolling(window=period).mean()
     return sma.iloc[-1], sma.iloc[-2] if len(sma) > 1 else (sma.iloc[-1], None)
-
 def calculate_ema(data: pd.Series, period: int = 20) -> Tuple[Optional[float], Optional[float]]:
     """
     Calculate the Exponential Moving Average (EMA) for the given data and period.
@@ -111,42 +114,43 @@ def calculate_ema(data: pd.Series, period: int = 20) -> Tuple[Optional[float], O
     ema = data.ewm(span=period, adjust=False).mean()
     return ema.iloc[-1], ema.iloc[-2] if len(ema) > 1 else (ema.iloc[-1], None)
 
-def calculate_trix(data: pd.Series, period: int = 15) -> Optional[float]:
+
+def calculate_trix(data: pd.Series, period: int = 15) -> pd.Series:
     if len(data) < period:
         print(f"Not enough data to calculate TRIX for period: {period}")
-        return None
-    
+        return pd.Series([None] * len(data), index=data.index)
+
     ema1 = data.ewm(span=period, adjust=False).mean()
     ema2 = ema1.ewm(span=period, adjust=False).mean()
     ema3 = ema2.ewm(span=period, adjust=False).mean()
-    trix = 100 * (ema3.diff() / ema3.shift(1))
-    return trix.iloc[-1] if not trix.empty else None
+    return 100 * (ema3.diff() / ema3.shift(1))
 
-def calculate_aroon(high: pd.Series, low: pd.Series, period: int = 25) -> Tuple[Optional[float], Optional[float]]:
+def calculate_aroon(high: pd.Series, low: pd.Series, period: int = 25) -> Tuple[pd.Series, pd.Series]:
     if len(high) < period or len(low) < period:
         print(f"Not enough data to calculate Aroon for period: {period}")
-        return None, None
+        return pd.Series([None] * len(high), index=high.index), pd.Series([None] * len(low), index=low.index)
     
     aroon_up = high.rolling(window=period).apply(lambda x: (x.argmax() + 1) * 100 / period, raw=True)
     aroon_down = low.rolling(window=period).apply(lambda x: (x.argmin() + 1) * 100 / period, raw=True)
-    return aroon_up.iloc[-1], aroon_down.iloc[-1] if not aroon_up.empty and not aroon_down.empty else (None, None)
+    return aroon_up, aroon_down
 
-def calculate_elder_ray(high: pd.Series, low: pd.Series, close: pd.Series) -> Tuple[Optional[float], Optional[float]]:
+def calculate_elder_ray(high: pd.Series, low: pd.Series, close: pd.Series) -> Tuple[pd.Series, pd.Series]:
     if len(high) < 13 or len(low) < 13 or len(close) < 13:
         print("Not enough data to calculate Elder Ray for period: 13")
-        return None, None
+        return pd.Series([None] * len(high), index=high.index), pd.Series([None] * len(low), index=low.index)
 
     bull_power = high - close.ewm(span=13, adjust=False).mean()
     bear_power = low - close.ewm(span=13, adjust=False).mean()
-    return bull_power.iloc[-1], bear_power.iloc[-1] if not bull_power.empty and not bear_power.empty else (None, None)
+    return bull_power, bear_power
+import pandas as pd
+from typing import Optional
 
-def calculate_heikin_ashi(open: pd.Series, high: pd.Series, low: pd.Series, close: pd.Series) -> Optional[float]:
+def calculate_heikin_ashi(open: pd.Series, high: pd.Series, low: pd.Series, close: pd.Series) -> pd.Series:
     if len(open) < 1 or len(high) < 1 or len(low) < 1 or len(close) < 1:
         print("Not enough data to calculate Heikin Ashi")
-        return None
+        return pd.Series([None] * len(close), index=close.index)
 
-    ha_close = (open + high + low + close) / 4
-    return None if ha_close.empty else ha_close.iloc[-1]
+    return (open + high + low + close) / 4
 
 def calculate_rsi(data: pd.Series, period: int = 14) -> Optional[float]:
     if len(data) < period:
@@ -163,7 +167,7 @@ def calculate_rsi(data: pd.Series, period: int = 14) -> Optional[float]:
 def calculate_parabolic_sar(close: pd.Series, low: pd.Series, high: pd.Series, af_start: float = 0.02, af_increment: float = 0.02, af_max: float = 0.2) -> pd.Series:
     if len(close) < 1 or len(low) < 1 or len(high) < 1:
         print("Not enough data to calculate Parabolic SAR")
-        return pd.Series([None])
+        return pd.Series([None], index=close.index)
 
     psar = close.copy()
     psar.iloc[0] = low.iloc[0]

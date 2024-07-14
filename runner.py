@@ -16,7 +16,7 @@ from dotenv import load_dotenv
 import os
 import data_middleman as dm
 
-# Load environment variables from .env file
+# Load environment variables
 load_dotenv()
 
 # Initialize the lock
@@ -166,9 +166,21 @@ def news_stock_analyzer(stock_ticker, db_manager):
         logging.error(f"News analysis not working for {stock_ticker}. Error: {e}")
     conn.close()  # Close the connection after use
 
+def initialize_and_start_backtester():
+    logging.info("Backtester initialization started")
+    print("Backtester initialization started")
+    # Here you can add your backtester initialization code
+    # Simulate some backtesting work
+    for i in range(3):
+        print(f"Backtesting iteration {i+1}")
+        time.sleep(1)  # Simulate a task taking time
+    logging.info("Backtester initialization finished")
+    print("Backtester initialization finished")
+
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     logging.info("Starting the trading bot")
+    print("Starting the trading bot")
 
     # Load DB credentials from .env file
     db_credentials = {
@@ -198,56 +210,83 @@ if __name__ == "__main__":
             for position in positions
         }
     logging.info(f"Currently Purchased: {active_positions_to_check}")
+    print(f"Currently Purchased: {active_positions_to_check}")
     first_time_run = True
 
     # Use the scrape_all_urls function to get the valid tickers
+    print("Scraping all URLs for valid tickers")
     valid_tickers = scraper.scrape_all_urls()
 
     # Store initial stock data in the database
+    print("Storing initial stock data in the database")
     for ticker in valid_tickers:
-        stock_data = sdg.get_current_stock_data(ticker)
+        print(f"Processing ticker: {ticker}")
+        if isinstance(ticker, dict):
+            ticker = ticker.get('Ticker', '')
+        if not isinstance(ticker, str):
+            raise ValueError("Ticker should be a string")
+
+        stock_data = dm.get_current_data(conn, ticker)
+        print(f"Fetched current data for {ticker}")
         stock_data['price_slope'] = sdg.get_price_slope(ticker)
+        print(f"Calculated price slope for {ticker}")
         stock_data['volume_slope'] = sdg.get_volume_slope(ticker)
+        print(f"Calculated volume slope for {ticker}")
         stock_data['company_name'] = sdg.get_stock_company_name(ticker)
+        print(f"Fetched company name for {ticker}")
         sdg.store_stock_data_in_db(ticker, stock_data)
         logging.info(f"Stored data for {ticker}")
+        print(f"Stored data for {ticker}")
 
     while True:
         try:
             logging.info("New Iteration of Stock Scanning")
+            print("New Iteration of Stock Scanning")
             current_time = datetime.now().strftime("%H:%M")
             if const.STOCK_MARKET_OPEN_TIME < current_time < const.STOCK_MARKET_CLOSE_TIME:
                 if first_time_run:
+                    print("Starting stock position analyzer")
                     threading.Thread(target=stock_position_analyzer, args=(db_manager,)).start()
                     first_time_run = False
                 active_stocks = scraper.active_stocks()
+                print("Fetched active stocks")
                 partitioned_stocks = list(util.partition_array(active_stocks, const.STOCK_SCANNER_PARTITION_COUNT))
                 for partition in partitioned_stocks:
+                    print(f"Starting strategy execution for partition: {partition}")
                     threading.Thread(target=StrategyRunner(db_manager).execute, args=(partition,)).start()
             else:
                 logging.info("Market Close")
+                print("Market Close")
 
                 # Run the backtester continuously until market opens
                 while current_time >= const.STOCK_MARKET_CLOSE_TIME or current_time < const.STOCK_MARKET_OPEN_TIME:
                     logging.info("Starting Backtester")
-                    threading.Thread(target=StrategyRunner(db_manager).run_strategy, args=(db_manager,)).start()  # Run backtests after other tasks
+                    print("Starting Backtester")
+                    threading.Thread(target=initialize_and_start_backtester).start()
                     time.sleep(3600)  # Wait for an hour before running again
                     current_time = datetime.now().strftime("%H:%M")
 
             # Execute the news analyzer for both constant stocks and active stocks from the scraper module
             for stock_ticker in const.STOCKS_TO_CHECK + scraper.active_stocks():
+                print(f"Starting news analyzer for {stock_ticker}")
                 threading.Thread(target=news_stock_analyzer, args=(stock_ticker, db_manager)).start()
 
             logging.info("Starting Backtester")
-            threading.Thread(target=StrategyRunner(db_manager).run_strategy, args=(db_manager,)).start()  # Run backtests after other tasks
+            print("Starting Backtester")
+            threading.Thread(target=initialize_and_start_backtester).start()
 
             logging.info("Finished Backtester")
+            print("Finished Backtester")
             time.sleep(14400)  # Wait for 4 hours before running again
         except Exception as e:
             logging.error(f"Restarting due to error: {e}")
+            print(f"Restarting due to error: {e}")
             time.sleep(60)  # Wait for a minute before retrying in case of an error
 
     # Close DB connection and cache on exit
-    db_manager.close()
-    cache.close()
-    conn.close()
+        db_manager.close()
+        cache.close()
+        conn.close()
+
+# Start the backtester using the new function
+initialize_and_start_backtester()

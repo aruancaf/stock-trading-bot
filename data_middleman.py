@@ -28,6 +28,10 @@ def get_current_data(conn, ticker):
     WHERE stocks.ticker = ?
     """
     try:
+        if isinstance(ticker, dict):
+            ticker = ticker.get('Ticker', '')
+        if not isinstance(ticker, str):
+            raise ValueError("Ticker should be a string")
         return pd.read_sql(query, conn, params=(ticker,))
     except Exception as e:
         print(f"Error fetching current data for {ticker}: {e}")
