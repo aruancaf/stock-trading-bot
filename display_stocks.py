@@ -31,9 +31,10 @@ def plot_sentiment(ticker, days=30):
 
 # Function to plot volume data
 def plot_volume(ticker, n=180):
-    stock_prices = []
-    for i in range(-n, 0, 1):
-        stock_prices.append(sdg.get_historical_data(ticker, "1d", "1m").iloc[i].to_dict()['Volume'])
+    stock_prices = [
+        sdg.get_historical_data(ticker, "1d", "1m").iloc[i].to_dict()['Volume']
+        for i in range(-n, 0)
+    ]
     plt.plot(list(range(n)), stock_prices, 'xb-')
     plt.xlabel('Time')
     plt.ylabel('Volume')

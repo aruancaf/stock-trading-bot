@@ -87,7 +87,9 @@ class Market:
             emotion = 'neutral'
         return emotion
 
-def execute(market, strategy, stratParams=[0, 0]):
+def execute(market, strategy, stratParams=None):
+    if stratParams is None:
+        stratParams = [0, 0]
     periods = np.zeros(market.data.shape[0])
     for i in range(market.data.shape[0]):
         periods[i] = int(i)

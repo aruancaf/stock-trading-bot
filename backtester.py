@@ -1,16 +1,25 @@
 import os
+import time
 from matplotlib import pyplot as plt
 import pandas as pd
 import sqlite3
 import logging
+import psutil
 from db_manager import dbHandler
-from data_middleman import get_historical_data  # Correct import statement
+from data_middleman import get_historical_data
 import scraper
 import util
 from collections import Counter
 from stock_data_gatherer import get_all_tickers
+import multiprocessing as mp
+import cProfile
+import pstats
 
-logging.basicConfig(filename='backtester.log', level=logging.INFO, format='%(asctime)s - %(levelname=s - %(message=s')
+logging.basicConfig(filename='backtester.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+def log_system_usage():
+    logging.info(f"CPU usage: {psutil.cpu_percent()}%")
+    logging.info(f"Memory usage: {psutil.virtual_memory().percent}%")
 
 class PositionSizer:
     def __init__(self, risk_per_trade=0.01, max_leverage=1.0):
@@ -31,6 +40,7 @@ class Backtester:
         self.trades = []
 
     def buy_stock(self, ticker, price, date):
+        logging.info(f"Trying to buy {ticker} at {price} on {date}")
         if ticker not in self.positions:
             self.positions[ticker] = {'price': price, 'date': date}
             self.balance -= price
@@ -38,6 +48,7 @@ class Backtester:
             logging.info(f"Bought {ticker} at {price} on {date}")
 
     def sell_stock(self, ticker, price, date):
+        logging.info(f"Trying to sell {ticker} at {price} on {date}")
         if ticker in self.positions:
             self.balance += price
             self.trades.append({'ticker': ticker, 'price': price, 'date': date, 'type': 'sell'})
@@ -61,6 +72,7 @@ class Backtester:
         plt.show()
 
     def calculate_performance(self):
+        logging.info("Calculating performance")
         final_balance = self.balance + sum(
             position['price'] for position in self.positions.values()
         )
@@ -68,6 +80,7 @@ class Backtester:
         return final_balance
 
     def calculate_metrics(self):
+        logging.info("Calculating metrics")
         df = self._extracted_from_calculate_metrics_4()
         metrics = {
             'Net Performance': self.calculate_performance(),
@@ -92,6 +105,7 @@ class Backtester:
         return result
 
     def _calculate_streak_metrics(self, df):
+        logging.info("Calculating streak metrics")
         win_streaks, loss_streaks = self._get_streaks(df)
         return {
             'Win Streak, avg': sum(win_streaks) / len(win_streaks) if win_streaks else 0,
@@ -101,6 +115,7 @@ class Backtester:
         }
 
     def _calculate_drawdown_metrics(self, df):
+        logging.info("Calculating drawdown metrics")
         cumulative_returns = df['price'].cumsum()
         drawdown = cumulative_returns.cummax() - cumulative_returns
         return {
@@ -108,6 +123,7 @@ class Backtester:
         }
 
     def _calculate_performance_metrics(self, df):
+        logging.info("Calculating performance metrics")
         wins = df[df['price'] > 0]['price']
         losses = df[df['price'] < 0]['price']
         returns = df['price']
@@ -123,6 +139,7 @@ class Backtester:
         }
 
     def _get_streaks(self, df):
+        logging.info("Calculating win/loss streaks")
         win_streaks = []
         loss_streaks = []
         current_win_streak = 0
@@ -166,7 +183,7 @@ class StrategyRunner:
     def combined_strategy(self, stock_info) -> float:
         score = 0
         historical_data = stock_info['historical_data']
-        open = historical_data['open']
+        open_price = historical_data['open']
         high = historical_data['high']
         low = historical_data['low']
         close = historical_data['close']
@@ -190,7 +207,7 @@ class StrategyRunner:
         if bull_power is not None:
             score += bull_power
         
-        heikin_ashi_close = util.calculate_heikin_ashi(open, high, low, close)
+        heikin_ashi_close = util.calculate_heikin_ashi(open_price, high, low, close)
         if heikin_ashi_close is not None:
             score += heikin_ashi_close
         
@@ -204,63 +221,72 @@ class StrategyRunner:
         
         return score
 
-    def run_strategy(self, strategy, tickers, conn):
-        for ticker in tickers:
-            logging.info(f"Fetching historical data for {ticker}")
-            try:
-                historical_data = get_historical_data(conn, ticker)
-                if not historical_data.empty:
-                    open = historical_data['open']
-                    high = historical_data['high']
-                    low = historical_data['low']
-                    close = historical_data['close']
-                    for date, row in historical_data.iterrows():
-                        bull_power, bear_power = util.calculate_elder_ray(high, low, close)
-                        stock_info = {
-                            'price': row['close'],
-                            'SMA': util.calculate_sma(historical_data),
-                            'EMA': util.calculate_ema(close),
-                            'TRIX': util.calculate_trix(close),
-                            'AROON_UP': util.calculate_aroon(high, low)[0],
-                            'AROON_DOWN': util.calculate_aroon(high, low)[1],
-                            'BULL_POWER': bull_power,
-                            'BEAR_POWER': bear_power,
-                                                       'HEIKIN_ASHI_CLOSE': util.calculate_heikin_ashi(open, high, low, close),
-                            'PSAR': util.calculate_parabolic_sar(close, low, high),
-                            'RSI': util.calculate_rsi(close),
-                            'historical_data': historical_data
-                        }
-                        signal = strategy(stock_info)
-                        if isinstance(signal, str):
-                            if signal == 'buy':
-                                Backtester.buy_stock(ticker, row['close'], date)
-                            elif signal == 'sell':
-                                Backtester.sell_stock(ticker, row['close'], date)
-                        else:
-                            logging.warning(f"Invalid signal for {ticker} on {date}: {signal}")
-                else:
-                    logging.warning(f"No historical data for {ticker}")
-            except Exception as e:
-                logging.error(f"Error fetching data for {ticker}: {e}")
+    def run_strategy(self, strategy, ticker):
+        logging.info(f"Fetching historical data for {ticker}")
+        try:
+            conn = sqlite3.connect("stocks.db")
+            historical_data = get_historical_data(conn, ticker)
+            if not historical_data.empty:
+                open_price = historical_data['open']
+                high = historical_data['high']
+                low = historical_data['low']
+                close = historical_data['close']
+                for date, row in historical_data.iterrows():
+                    bull_power, bear_power = util.calculate_elder_ray(high, low, close)
+                    stock_info = {
+                        'price': row['close'],
+                        'SMA': util.calculate_sma(historical_data),
+                        'EMA': util.calculate_ema(close),
+                        'TRIX': util.calculate_trix(close),
+                        'AROON_UP': util.calculate_aroon(high, low)[0],
+                        'AROON_DOWN': util.calculate_aroon(high, low)[1],
+                        'BULL_POWER': bull_power,
+                        'BEAR_POWER': bear_power,
+                        'HEIKIN_ASHI_CLOSE': util.calculate_heikin_ashi(open_price, high, low, close),
+                        'PSAR': util.calculate_parabolic_sar(close, low, high),
+                        'RSI': util.calculate_rsi(close),
+                        'historical_data': historical_data
+                    }
+                    signal = strategy(stock_info)
+                    if isinstance(signal, str):
+                        if signal == 'buy':
+                            Backtester.buy_stock(ticker, row['close'], date)
+                        elif signal == 'sell':
+                            Backtester.sell_stock(ticker, row['close'], date)
+                    else:
+                        logging.warning(f"Invalid signal for {ticker} on {date}: {signal}")
+            else:
+                logging.warning(f"No historical data for {ticker}")
+        except Exception as e:
+            logging.error(f"Error fetching data for {ticker}: {e}")
+        finally:
+            conn.close()
+
+    def run_strategy_multiprocessing(self, strategy_name, tickers):
+        strategy = self.strategies[strategy_name]
+        with mp.Pool(processes=mp.cpu_count()) as pool:
+            pool.starmap(self.run_strategy, [(strategy, ticker) for ticker in tickers])
 
     def run_backtest(self, start_date, end_date, initial_balance):
         backtester = Backtester(start_date, end_date, initial_balance)
-        # Fetch the historical stock data
         conn = sqlite3.connect("stocks.db")
         tickers = get_all_tickers(conn)
-        tickers_historical_data = {ticker: get_historical_data(conn, ticker) for ticker in tickers}
+        conn.close()
 
-        # Convert the generator to a list
-        batches = list(util.partition_array(list(tickers_historical_data.keys()), 10))  # Split tickers into batches of 10
+        batches = list(util.partition_array(tickers, 10))  # Split tickers into batches of 10
+
+        total_batches = len(batches)
+        total_start_time = time.time()
 
         for batch_num, batch in enumerate(batches):
-            logging.info(f"Starting backtest for batch {batch_num + 1}/{len(batches)}: {batch}")
-            print(f"Starting backtest for batch {batch_num + 1}/{len(batches)}: {batch}")
-            for name, strategy in self.strategies.items():
+            batch_start_time = time.time()
+            logging.info(f"Starting backtest for batch {batch_num + 1}/{total_batches}: {batch}")
+            print(f"Starting backtest for batch {batch_num + 1}/{total_batches}: {batch}")
+            for name in self.strategies.keys():
                 try:
                     logging.info(f"Running strategy {name} on batch {batch}")
                     print(f"Starting strategy {name} on batch {batch_num + 1}")
-                    self.run_strategy(strategy, batch, conn)
+                    self.run_strategy_multiprocessing(name, batch)
                     metrics = backtester.calculate_metrics()
                     logging.info(f"Backtest metrics for {name} in batch {batch_num + 1}: {metrics}")
                     print(f"Finished strategy {name} on batch {batch_num + 1}")
@@ -271,16 +297,26 @@ class StrategyRunner:
                         'metrics': metrics
                     })
 
-                    # Determine the best strategy for each metric
                     best_strategy = max(metrics, key=metrics.get)
                     self.scores[best_strategy] += 1
                 except Exception as e:
                     logging.error(f"Error running strategy {name} on batch {batch}: {e}")
                     print(f"Error running strategy {name} on batch {batch_num + 1}: {e}")
-            logging.info(f"Completed backtest for batch {batch_num + 1}/{len(batches)}")
-            print(f"Completed backtest for batch {batch_num + 1}/{len(batches)}")
+            batch_end_time = time.time()
+            batch_duration = batch_end_time - batch_start_time
+            logging.info(f"Completed backtest for batch {batch_num + 1}/{total_batches} in {batch_duration:.2f} seconds")
+            print(f"Completed backtest for batch {batch_num + 1}/{total_batches} in {batch_duration:.2f} seconds")
 
-        conn.close()
+            remaining_batches = total_batches - (batch_num + 1)
+            if remaining_batches > 0:
+                estimated_remaining_time = (batch_duration * remaining_batches) / 60
+                logging.info(f"Estimated remaining time: {estimated_remaining_time:.2f} minutes")
+                print(f"Estimated remaining time: {estimated_remaining_time:.2f} minutes")
+
+        total_end_time = time.time()
+        total_duration = total_end_time - total_start_time
+        logging.info(f"Total backtesting duration: {total_duration:.2f} seconds")
+        print(f"Total backtesting duration: {total_duration:.2f} seconds")
 
         best_overall_strategy = max(self.scores, key=self.scores.get)
         logging.info(f"Best overall strategy: {best_overall_strategy} with score: {self.scores[best_overall_strategy]}")
@@ -291,10 +327,8 @@ class StrategyRunner:
         return self.results
 
 if __name__ == "__main__":
-    # Set up logging
-    logging.basicConfig(filename='backtester.log', level=logging.INFO, format='%(asctime)s - %(levelname=s - %(message=s')
+    logging.basicConfig(filename='backtester.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-    # Initialize DBManager with credentials from environment variables
     db_credentials = {
         "dbname": os.getenv("DB_NAME"),
         "user": os.getenv("DB_USER"),
@@ -304,23 +338,26 @@ if __name__ == "__main__":
     }
     db_manager = dbHandler(db_credentials)
 
-    # Running Backtests
     strategy_runner = StrategyRunner()
-    start_date = "2019-01-01"
-    end_date = "2024-12-31"
+    start_date = "2022-01-01"
+    end_date = "2024-05-31"
     initial_balance = 1000
 
-    # Run backtests on all tickers with historical data
+    profiler = cProfile.Profile()
+    profiler.enable()
+    
     strategy_runner.run_backtest(start_date=start_date, end_date=end_date, initial_balance=initial_balance)
+    
+    profiler.disable()
+    stats = pstats.Stats(profiler)
+    stats.sort_stats('cumtime').print_stats(10)
 
-    # Get the results from the strategy runner
     try:
         results = strategy_runner.get_results()
         for result in results:
-            db_manager.save_result(result)  # Assuming this method exists to save the result to the database
+            db_manager.save_result(result)
     except Exception as e:
         logging.error(f"Error saving results: {e}")
         print(f"Error saving results: {e}")
 
-    # Close DB connection on exit
     db_manager.close()
